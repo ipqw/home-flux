@@ -1,0 +1,25 @@
+# Что общего у всех Kustomization ниже:
+#   interval  — как часто Flux сверяет кластер с git. 1m, а не дефолтные 10m:
+#               иначе после ручной правки ждать отката до десяти минут и решить,
+#               что GitOps не работает.
+#   prune     — удалённое из git удаляется и из кластера. Без этого git перестаёт
+#               быть источником истины: он бы только добавлял, но не убирал.
+#   wait      — Flux ждёт готовности ресурсов, прежде чем считать применение успешным.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure
+  namespace: flux-system
+spec:
+  interval: 1m
+  path: ./infrastructure
+  prune: true
+  wait: true
+  timeout: 5m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age

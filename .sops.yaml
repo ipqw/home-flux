@@ -1,0 +1,9 @@
+# Ключ шифрования секретов репозитория. Приватная половина — ~/main/keys/flux-home.key
+# и в кластере (секрет flux-system/sops-age). Публичная — здесь, её достаточно для
+# шифрования, но не для чтения.
+creation_rules:
+  - path_regex: .*\.yaml
+    # Шифруются ТОЛЬКО значения секретов. Структура (kind, metadata, имена)
+    # остаётся читаемой, иначе любой git diff выглядит как «поменялось всё».
+    encrypted_regex: ^(data|stringData)$
+    age: age1fnteet2mnkw75uhpz4k0nzwdxjwcxyy5ludtkx55w2afvm98yg6q6jc8r6

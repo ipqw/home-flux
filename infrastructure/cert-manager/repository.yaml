@@ -1,0 +1,10 @@
+# Откуда Flux берёт чарт. Это не «репозиторий с кодом», а адрес каталога
+# helm-чартов: source-controller ходит туда раз в час и складывает индекс.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: jetstack
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://charts.jetstack.io

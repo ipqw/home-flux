@@ -1,0 +1,36 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cert-manager
+  namespace: cert-manager
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: cert-manager
+      # Версия пинуется явно. Плавающая версия означает, что кластер
+      # меняется без коммита — ровно то, что GitOps должен исключать.
+      version: v1.21.1
+      sourceRef:
+        kind: HelmRepository
+        name: jetstack
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    # CRD ставит сам чарт. Иначе их пришлось бы применять отдельным шагом
+    # руками — то есть мимо git.
+    crds:
+      enabled: true
+    # 6 ГБ на всё: держим cert-manager в рамках, чтобы он не конкурировал
+    # с Synapse за память под нагрузкой.
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        memory: 128Mi
