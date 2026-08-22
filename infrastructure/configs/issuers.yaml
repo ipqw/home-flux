@@ -1,0 +1,42 @@
+# ClusterIssuer — «откуда брать сертификаты». Cluster-, а не просто Issuer:
+# Issuer виден только в своём namespace, а сертификаты понадобятся и в ess,
+# и в apps, и в infrastructure.
+#
+# Два issuer'а не для красоты. У боевого Let's Encrypt жёсткие лимиты
+# (50 сертификатов на домен в неделю, 5 неудач в час), и упереться в них
+# на отладке — значит остаться без TLS на неделю. Поэтому любая новая
+# конфигурация сначала проверяется на staging, где лимиты почти отсутствуют,
+# а сертификат невалиден для браузера.
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: naplesflorida2026@yahoo.com
+    privateKeySecretRef:
+      name: letsencrypt-staging-account
+    solvers:
+      # HTTP-01: Let's Encrypt стучится на http://<домен>/.well-known/acme-challenge/...
+      # и должен получить ответ. Именно поэтому порт 80 открыт в ufw —
+      # он нужен не для сайта, а для этой проверки.
+      - http01:
+          ingress:
+            class: traefik
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: naplesflorida2026@yahoo.com
+    privateKeySecretRef:
+      name: letsencrypt-prod-account
+    solvers:
+      - http01:
+          ingress:
+            class: traefik

@@ -1,21 +1,53 @@
-# Что общего у всех Kustomization ниже:
-#   interval  — как часто Flux сверяет кластер с git. 1m, а не дефолтные 10m:
-#               иначе после ручной правки ждать отката до десяти минут и решить,
-#               что GitOps не работает.
-#   prune     — удалённое из git удаляется и из кластера. Без этого git перестаёт
-#               быть источником истины: он бы только добавлял, но не убирал.
-#   wait      — Flux ждёт готовности ресурсов, прежде чем считать применение успешным.
+# Инфраструктура разложена на два слоя, и это не косметика.
+#
+# controllers — то, что приносит новые типы ресурсов (CRD). cert-manager
+#               создаёт тип ClusterIssuer, которого до его установки
+#               в кластере не существует.
+# configs     — то, что этими типами пользуется.
+#
+# Слить их в один Kustomization можно, но тогда при восстановлении с нуля (§9)
+# Flux попытается применить ClusterIssuer в кластер, где такого kind ещё нет,
+# и будет ретраить до победы. Работает, но выглядит как поломка. dependsOn
+# делает порядок явным.
+#
+# У всех Kustomization ниже:
+#   interval 1m — как часто сверяется кластер с git. Не дефолтные 10m,
+#                 иначе после ручной правки отката ждать до десяти минут.
+#   prune true  — удалённое из git удаляется и из кластера. Без этого git
+#                 только добавляет, но не убирает, и перестаёт быть истиной.
+---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: infrastructure
+  name: infra-controllers
   namespace: flux-system
 spec:
   interval: 1m
-  path: ./infrastructure
+  path: ./infrastructure/controllers
   prune: true
   wait: true
   timeout: 5m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infra-configs
+  namespace: flux-system
+spec:
+  interval: 1m
+  path: ./infrastructure/configs
+  prune: true
+  wait: true
+  timeout: 5m
+  dependsOn:
+    - name: infra-controllers
   sourceRef:
     kind: GitRepository
     name: flux-system

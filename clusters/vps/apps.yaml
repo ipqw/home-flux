@@ -11,7 +11,7 @@ spec:
   # Сервисы едут после инфраструктуры: cert-manager должен существовать
   # раньше, чем кто-то попросит у него сертификат.
   dependsOn:
-    - name: infrastructure
+    - name: infra-configs
   sourceRef:
     kind: GitRepository
     name: flux-system
