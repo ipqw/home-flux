@@ -20,7 +20,7 @@ spec:
       labels:
         app: subs
       annotations:
-        contentVersion: "525e215a"
+        contentVersion: "40bd1271"
     spec:
       containers:
         - name: nginx
