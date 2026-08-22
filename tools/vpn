@@ -3,7 +3,8 @@
 Управление доступами к VPN.
 
     tools/vpn list              показать всех и их ссылки
-    tools/vpn add папа          завести человека
+    tools/vpn add папа          завести человека (печатает ссылку и QR)
+    tools/vpn qr папа           показать QR уже заведённого
     tools/vpn remove папа       отозвать доступ
     tools/vpn apply             перегенерировать всё и выкатить
 
@@ -165,6 +166,16 @@ def publish(message, push=True):
         print("закоммичено локально, не запушено")
 
 
+def qr(text):
+    """QR прямо в терминал: родне проще навести камеру, чем копировать ссылку."""
+    r = subprocess.run(["qrencode", "-t", "ANSIUTF8", "-m", "1", text],
+                       capture_output=True, text=True)
+    if r.returncode == 0:
+        print(r.stdout)
+    else:
+        print("  (qrencode не установлен — ссылку придётся копировать)")
+
+
 def show(data):
     srv = data["server"]
     print(f"\n  сервер: {srv['host']}\n")
@@ -175,7 +186,7 @@ def show(data):
 
 def main():
     ap = argparse.ArgumentParser(add_help=True)
-    ap.add_argument("command", choices=["list", "add", "remove", "apply"])
+    ap.add_argument("command", choices=["list", "add", "remove", "qr", "apply"])
     ap.add_argument("name", nargs="?")
     ap.add_argument("--no-push", action="store_true", help="не пушить в GitHub")
     a = ap.parse_args()
@@ -185,6 +196,17 @@ def main():
 
     if a.command == "list":
         show(data)
+        return
+
+    if a.command == "qr":
+        if not a.name:
+            sys.exit(f"нужно имя:  tools/vpn qr <имя>.  Есть: {', '.join(names)}")
+        person = next((p for p in data["people"] if p["name"] == a.name), None)
+        if not person:
+            sys.exit(f"«{a.name}» нет в списке. Есть: {', '.join(names)}")
+        url = f"https://{data['server']['host']}/sub/{person['sub']}"
+        print(f"\n  {a.name}: {url}\n")
+        qr(url)
         return
 
     if a.command == "apply":
@@ -208,7 +230,11 @@ def main():
         regenerate(data)
         publish(f"vpn: доступ для {a.name}", push=not a.no_push)
         p = data["people"][-1]
-        print(f"\n  {a.name}: https://{data['server']['host']}/sub/{p['sub']}\n")
+        url = f"https://{data['server']['host']}/sub/{p['sub']}"
+        print(f"\n  ссылка для «{a.name}»:\n  {url}\n")
+        qr(url)
+        print("  Наведи камеру телефона на этот код — или отправь ссылку текстом.")
+        print("  В приложении: Happ или v2rayNG → добавить подписку.\n")
 
     elif a.command == "remove":
         if a.name not in names:
