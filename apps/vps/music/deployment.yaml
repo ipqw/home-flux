@@ -1,0 +1,64 @@
+# Navidrome — сайт-донор для Reality. Выбран не случайно: маскировка
+# должна выдерживать не только взгляд, но и объём. Через донора пойдут
+# гигабайты трафика родни, и «сутки качают со страницы-визитки» —
+# аномалия. «Сутки слушают музыку со своего стримера» — нет.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: navidrome
+  namespace: music
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: navidrome
+  template:
+    metadata:
+      labels:
+        app: navidrome
+    spec:
+      containers:
+        - name: navidrome
+          image: deluan/navidrome:0.63.2
+          env:
+            - name: ND_MUSICFOLDER
+              value: /music
+            - name: ND_DATAFOLDER
+              value: /data
+            - name: ND_LOGLEVEL
+              value: info
+            - name: ND_SCANSCHEDULE
+              value: "@every 24h"
+            - name: ND_SESSIONTIMEOUT
+              value: 24h
+            # Телеметрия разработчику выключена: сервер не должен сам
+            # рассказывать наружу о своём существовании.
+            - name: ND_ENABLEINSIGHTSCOLLECTOR
+              value: "false"
+          ports:
+            - name: http
+              containerPort: 4533
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: music
+              mountPath: /music
+          resources:
+            requests:
+              cpu: 20m
+              memory: 64Mi
+            limits:
+              memory: 384Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: navidrome-data
+        - name: music
+          persistentVolumeClaim:
+            claimName: navidrome-music

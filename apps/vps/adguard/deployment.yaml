@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adguard
+  namespace: adguard
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: adguard
+  template:
+    metadata:
+      labels:
+        app: adguard
+      annotations:
+        seedVersion: "1"
+    spec:
+      initContainers:
+        # AdGuard правит свой конфиг сам (через веб-интерфейс), поэтому файл
+        # обязан лежать на диске, а не быть смонтирован из Secret только для
+        # чтения. Эталон из git кладётся один раз, при первом запуске.
+        # Дальнейшие правки через веб — вне git; это осознанный компромисс,
+        # альтернатива — вручную переносить каждый чих в манифест.
+        - name: seed-config
+          image: busybox:1.37
+          command:
+            - sh
+            - -c
+            - |
+              if [ ! -f /work/conf/AdGuardHome.yaml ]; then
+                mkdir -p /work/conf
+                cp /seed/AdGuardHome.yaml /work/conf/AdGuardHome.yaml
+                echo "конфиг развёрнут из git"
+              else
+                echo "конфиг уже есть, не трогаю"
+              fi
+          volumeMounts:
+            - name: work
+              mountPath: /work
+            - name: seed
+              mountPath: /seed
+      containers:
+        - name: adguardhome
+          image: adguard/adguardhome:v0.107.79
+          args:
+            - --no-check-update
+            - --config
+            - /opt/adguardhome/work/conf/AdGuardHome.yaml
+            - --work-dir
+            - /opt/adguardhome/work
+          ports:
+            - name: dns-udp
+              containerPort: 53
+              protocol: UDP
+            - name: dns-tcp
+              containerPort: 53
+              protocol: TCP
+            - name: web
+              containerPort: 3000
+          volumeMounts:
+            - name: work
+              mountPath: /opt/adguardhome/work
+          resources:
+            requests:
+              cpu: 20m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+      volumes:
+        - name: work
+          persistentVolumeClaim:
+            claimName: adguard-work
+        - name: seed
+          secret:
+            secretName: adguard-seed

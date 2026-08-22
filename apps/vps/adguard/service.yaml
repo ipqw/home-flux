@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: adguard
+  namespace: adguard
+spec:
+  type: ClusterIP
+  # Адрес зафиксирован намеренно: он прописан в конфигах всех клиентов
+  # и в правиле-исключении маршрутизации Xray. Динамический ClusterIP
+  # менялся бы при пересоздании сервиса и ломал бы DNS у всей родни.
+  clusterIP: 10.43.53.53
+  selector:
+    app: adguard
+  ports:
+    - name: dns-udp
+      port: 53
+      targetPort: dns-udp
+      protocol: UDP
+    - name: dns-tcp
+      port: 53
+      targetPort: dns-tcp
+      protocol: TCP
+    - name: web
+      port: 3000
+      targetPort: web
