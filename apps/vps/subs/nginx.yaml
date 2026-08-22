@@ -4,15 +4,13 @@ metadata:
   name: subs-nginx
   namespace: subs
 data:
-  default.conf: "server {\n  listen 8080;\n  server_name _;\n\n  # Неугаданный токен\
-    \ не должен отличаться от несуществующего пути:\n  # снаружи и то, и другое —\
-    \ обычная 404 страница сервера.\n  error_page 404 = @notfound;\n  location @notfound\
-    \ {\n    default_type text/html;\n    return 404 '<html><head><title>404 Not Found</title></head><body><center><h1>404\
-    \ Not Found</h1></center><hr><center>nginx</center></body></html>';\n  }\n\n \
-    \ location /sub/ {\n    alias /srv/sub/;\n    default_type text/plain;\n    add_header\
+  default.conf: "server {\n  listen 8080;\n  server_name _;\n\n  error_page 404 =\
+    \ @notfound;\n  location @notfound {\n    default_type text/html;\n    return\
+    \ 404 '<html><head><title>404 Not Found</title></head><body><center><h1>404 Not\
+    \ Found</h1></center><hr><center>nginx</center></body></html>';\n  }\n\n  location\
+    \ /sub/ {\n    alias /srv/sub/;\n    default_type text/plain;\n    add_header\
     \ profile-title \"base64:aXBxdw==\" always;\n    add_header profile-update-interval\
     \ \"12\" always;\n    add_header subscription-userinfo \"upload=0; download=0;\
     \ total=0; expire=0\" always;\n    add_header routing \"happ://routing/add/eyJOYW1lIjogIiIsICJHbG9iYWxQcm94eSI6ICJ0cnVlIiwgIlJvdXRlT3JkZXIiOiAiYmxvY2stcHJveHktZGlyZWN0IiwgIlJlbW90ZUROU1R5cGUiOiAiRG9IIiwgIlJlbW90ZUROU0RvbWFpbiI6ICIiLCAiUmVtb3RlRE5TSVAiOiAiIiwgIkRvbWVzdGljRE5TVHlwZSI6ICJEb1UiLCAiRG9tZXN0aWNETlNEb21haW4iOiAiIiwgIkRvbWVzdGljRE5TSVAiOiAiIiwgIkdlb2lwdXJsIjogIiIsICJHZW9zaXRldXJsIjogIiIsICJMYXN0VXBkYXRlZCI6ICIiLCAiRG5zSG9zdHMiOiB7fSwgIkRpcmVjdFNpdGVzIjogWyJnZW9zaXRlOmNhdGVnb3J5LXJ1IiwgInJlZ2V4cDouKlxcLnJ1IiwgImdlb3NpdGU6eWFuZGV4IiwgImdlb3NpdGU6bWFpbHJ1IiwgImdlb3NpdGU6YXBwbGUiLCAiZ2Vvc2l0ZTptaWNyb3NvZnQiLCAiZ2Vvc2l0ZTpnb29nbGUtcGxheSJdLCAiRGlyZWN0SXAiOiBbImdlb2lwOnByaXZhdGUiLCAiZ2VvaXA6cnUiXSwgIlByb3h5U2l0ZXMiOiBbXSwgIlByb3h5SXAiOiBbXSwgIkJsb2NrU2l0ZXMiOiBbImdlb3NpdGU6Y2F0ZWdvcnktYWRzLWFsbCJdLCAiQmxvY2tJcCI6IFtdLCAiRG9tYWluU3RyYXRlZ3kiOiAiSVBJZk5vbk1hdGNoIiwgIkZha2VETlMiOiAiZmFsc2UiLCAiVXNlQ2h1bmtGaWxlcyI6ICJ0cnVlIn0=\"\
-    \ always;\n    # Подписку кэшировать нельзя: смена сервера должна доезжать сразу.\n\
-    \    add_header cache-control \"no-store\" always;\n  }\n\n  location = / { return\
-    \ 404; }\n}\n"
+    \ always;\n    add_header cache-control \"no-store\" always;\n  }\n\n  location\
+    \ = / { return 404; }\n}\n"
