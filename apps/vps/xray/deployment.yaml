@@ -5,6 +5,11 @@ metadata:
   namespace: xray
 spec:
   replicas: 1
+  # Recreate, а не RollingUpdate: под с hostNetwork занимает порт 443
+  # на самой ноде, и второй такой же не запланируется, пока первый жив.
+  # При RollingUpdate новый под встаёт в Pending и ждёт вечно.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: xray
