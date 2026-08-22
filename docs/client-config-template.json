@@ -1,0 +1,86 @@
+{
+  "_комментарий": [
+    "Эталонный конфиг клиента. UUID подставляется свой на каждого человека —",
+    "он же должен быть заведён в clients на сервере (apps/vps/xray/config.yaml).",
+    "Здесь три вещи, каждая из которых обязательна.",
+    "",
+    "1. DNS раздельный. Российские домены резолвятся напрямую через DoH Яндекса,",
+    "   остальные — через AdGuard на сервере (внутри туннеля, поэтому уже зашифрованы).",
+    "   Если резолвер один и он в Германии, российские сайты получат адреса",
+    "   европейских CDN и поедут через дальний edge — медленно и подозрительно.",
+    "",
+    "2. Маршрутизация. Российские домены и адреса идут мимо туннеля. Без этого",
+    "   Сбербанк, Госуслуги и Т-Банк увидят вход из Германии и включат",
+    "   дополнительные проверки вплоть до блокировки операций.",
+    "",
+    "3. Реклама режется правилом category-ads-all на клиенте и AdGuard'ом",
+    "   на сервере — два независимых слоя."
+  ],
+
+  "log": { "loglevel": "warning" },
+
+  "dns": {
+    "servers": [
+      {
+        "address": "https://common.dot.dns.yandex.net/dns-query",
+        "domains": ["geosite:category-ru"],
+        "skipFallback": true
+      },
+      {
+        "address": "10.43.53.53",
+        "domains": ["geosite:geolocation-!cn"],
+        "skipFallback": true
+      },
+      "https://dns.quad9.net/dns-query"
+    ],
+    "queryStrategy": "UseIPv4"
+  },
+
+  "inbounds": [
+    {
+      "listen": "127.0.0.1",
+      "port": 10808,
+      "protocol": "socks",
+      "settings": { "udp": true },
+      "sniffing": { "enabled": true, "destOverride": ["http", "tls", "quic"] }
+    }
+  ],
+
+  "outbounds": [
+    {
+      "tag": "proxy",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [{
+          "address": "music.ipqw.cc",
+          "port": 443,
+          "users": [{ "id": "ПОДСТАВИТЬ-UUID", "encryption": "none" }]
+        }]
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "security": "reality",
+        "realitySettings": {
+          "serverName": "music.ipqw.cc",
+          "fingerprint": "chrome",
+          "publicKey": "8LWhVaURl3EoKuft979z6wnvweoVCzI0wkP7NzyFvFQ",
+          "shortId": "c8698a257fa9badf",
+          "spiderX": "/"
+        },
+        "xhttpSettings": { "path": "/", "mode": "auto" }
+      }
+    },
+    { "tag": "direct", "protocol": "freedom" },
+    { "tag": "block", "protocol": "blackhole" }
+  ],
+
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": [
+      { "type": "field", "domain": ["geosite:category-ads-all"], "outboundTag": "block" },
+      { "type": "field", "domain": ["geosite:category-ru", "geosite:yandex", "geosite:mailru"], "outboundTag": "direct" },
+      { "type": "field", "ip": ["geoip:ru", "geoip:private"], "outboundTag": "direct" },
+      { "type": "field", "network": "tcp,udp", "outboundTag": "proxy" }
+    ]
+  }
+}
