@@ -1,10 +1,15 @@
-# k3s ставит traefik своим helm-контроллером. Переопределить его values можно
+# k3s ставит traefik своим helm-контроллером. Переопределить values можно
 # только так — HelmChartConfig с тем же именем в kube-system; править сам
-# HelmChart нельзя, k3s перезапишет его при рестарте.
+# HelmChart бесполезно, k3s перезапишет его при рестарте.
 #
-# Зачем: порт 443 на хосте отдаётся Xray под Reality. Traefik продолжает
-# держать 80 (там ACME) и переезжает на 8443, куда Xray проксирует весь
-# не-VPN трафик. Снаружи 8443 закрыт в ufw — он нужен только локально.
+# Что здесь делается и зачем:
+#   443 на хосте отдан Xray под Reality. Traefik держит 80 (там ACME-проверки)
+#   и переезжает на 8443 — но ВНУТРЬ кластера, без публикации наружу.
+#
+# expose.default: false — ключевая строка. Без неё servicelb вешает 8443
+# на внешний интерфейс, и любой сканер портов достучится до traefik напрямую,
+# минуя Reality: маскировка обходится одной строкой в nmap. Проверено —
+# порт действительно отвечал снаружи, пока эта строка не появилась.
 apiVersion: helm.cattle.io/v1
 kind: HelmChartConfig
 metadata:
@@ -15,3 +20,22 @@ spec:
     ports:
       websecure:
         exposedPort: 8443
+        expose:
+          default: false
+---
+# Отдельный внутрикластерный адрес для traefik: сюда Xray отправляет всё,
+# что не прошло аутентификацию Reality. ClusterIP наружу не маршрутизируется.
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-internal
+  namespace: kube-system
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: traefik-kube-system
+    app.kubernetes.io/name: traefik
+  ports:
+    - name: websecure
+      port: 8443
+      targetPort: websecure
