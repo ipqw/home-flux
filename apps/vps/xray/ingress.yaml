@@ -1,0 +1,29 @@
+# Вариант Б из §7.1: один IPv4, traefik терминирует TLS и раздаёт по пути.
+# Всё, что не совпало с секретным путём, уедет другим Ingress'ам (Matrix и т.д.),
+# поэтому снаружи адрес выглядит как обычный сайт.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: xray
+  namespace: xray
+  annotations:
+    # cert-manager увидит эту аннотацию и сам выпустит сертификат
+    # в секрет, указанный в tls.secretName ниже.
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - ipqw.cc
+      secretName: xray-tls
+  rules:
+    - host: ipqw.cc
+      http:
+        paths:
+          - path: /bladLPVOvaKbFLwdiykP3A
+            pathType: Prefix
+            backend:
+              service:
+                name: xray
+                port:
+                  number: 2001

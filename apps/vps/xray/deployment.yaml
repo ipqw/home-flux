@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xray
+  namespace: xray
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: xray
+  template:
+    metadata:
+      labels:
+        app: xray
+      annotations:
+        # Хеш конфига в аннотации не нужен: Flux пересоздаёт под сам,
+        # когда меняется Secret, только если это указать. Здесь проще —
+        # конфиг меняется редко, рестарт делается коммитом в образ/манифест.
+        configVersion: "1"
+    spec:
+      containers:
+        - name: xray
+          # Версия пинуется. latest означал бы, что кластер меняется
+          # без коммита — ровно то, что GitOps должен исключать.
+          image: ghcr.io/xtls/xray-core:26.7.28
+          args: ["run", "-c", "/etc/xray/config.json"]
+          ports:
+            - name: xhttp
+              containerPort: 2001
+          volumeMounts:
+            - name: config
+              mountPath: /etc/xray
+              readOnly: true
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 65532
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: config
+          secret:
+            secretName: xray-config
