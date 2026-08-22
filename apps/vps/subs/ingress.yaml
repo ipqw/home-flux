@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: subs
+  namespace: subs
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - music.ipqw.cc
+      secretName: subs-tls
+  rules:
+    # Путь длиннее, чем "/" у Navidrome, поэтому traefik отдаёт его сюда:
+    # он сортирует правила по специфичности, а не по порядку описания.
+    - host: music.ipqw.cc
+      http:
+        paths:
+          - path: /sub/
+            pathType: Prefix
+            backend:
+              service:
+                name: subs
+                port:
+                  number: 80

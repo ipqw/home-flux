@@ -1,0 +1,101 @@
+# Раздатчик подписок. Отдаёт статические файлы по секретным путям
+# и добавляет заголовки, из которых клиент берёт имя профиля, интервал
+# обновления и правила маршрутизации.
+#
+# Подписка обязана быть доступна БЕЗ туннеля: клиент тянет её до того,
+# как подключился. Поэтому путь /sub/ висит на публичном домене и
+# приезжает через тот же Reality-fallback, что и музыка.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subs
+  namespace: subs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: subs
+  template:
+    metadata:
+      labels:
+        app: subs
+      annotations:
+        contentVersion: "1"
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.29-alpine
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - name: content
+              mountPath: /srv/sub
+              readOnly: true
+            - name: conf
+              mountPath: /etc/nginx/conf.d
+              readOnly: true
+            - name: cache
+              mountPath: /var/cache/nginx
+            - name: run
+              mountPath: /var/run
+          resources:
+            requests:
+              cpu: 5m
+              memory: 8Mi
+            limits:
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 101
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: content
+          secret:
+            secretName: subs-content
+        - name: conf
+          configMap:
+            name: subs-nginx
+        - name: cache
+          emptyDir: {}
+        - name: run
+          emptyDir: {}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: subs-nginx
+  namespace: subs
+data:
+  default.conf: |
+    # Заголовки берутся из тех же сгенерированных файлов, что и подписки:
+    # routing.txt — правила маршрутизации, title.txt — имя профиля.
+    perl_modules /dev/null;
+
+    server {
+      listen 8080;
+      server_name _;
+      root /srv;
+
+      # Неугаданный токен не должен отличаться от несуществующего пути:
+      # снаружи и то и другое — обычная 404 страница сервера.
+      error_page 404 = @notfound;
+      location @notfound {
+        default_type text/html;
+        return 404 '<html><head><title>404 Not Found</title></head><body><center><h1>404 Not Found</h1></center><hr><center>nginx</center></body></html>';
+      }
+
+      location /sub/ {
+        alias /srv/sub/;
+        default_type text/plain;
+        add_header profile-update-interval "12" always;
+        add_header subscription-userinfo "upload=0; download=0; total=0; expire=0" always;
+        add_header content-disposition 'attachment; filename="ipqw"' always;
+        # Подписку кэшировать нельзя: смена сервера должна доезжать сразу.
+        add_header cache-control "no-store" always;
+      }
+
+      location = / { return 404; }
+    }
