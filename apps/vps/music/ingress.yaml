@@ -10,10 +10,16 @@ spec:
   tls:
     - hosts:
         - music.ipqw.cc
+        - www.ipqw.cc
+        - ipqw.cc
       secretName: music-tls
   rules:
+    # Все три имени ведут на музыкальный сервис: домен целиком выглядит
+    # как личный стример, а не как «сайт-визитка и что-то ещё рядом».
+    # В фазе 3 apex заберёт себе только путь /.well-known/matrix/* —
+    # остальное останется здесь.
     - host: music.ipqw.cc
-      http:
+      http: &navidrome
         paths:
           - path: /
             pathType: Prefix
@@ -22,3 +28,7 @@ spec:
                 name: navidrome
                 port:
                   number: 80
+    - host: www.ipqw.cc
+      http: *navidrome
+    - host: ipqw.cc
+      http: *navidrome
