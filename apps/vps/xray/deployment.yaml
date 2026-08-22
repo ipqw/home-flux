@@ -44,12 +44,17 @@ spec:
               memory: 256Mi
           securityContext:
             allowPrivilegeEscalation: false
-            runAsNonRoot: true
-            runAsUser: 65532
+            # Здесь пришлось пойти на root, и это не небрежность.
+            # NET_BIND_SERVICE для non-root процесса попадает только
+            # в permitted-набор, но не в effective: чтобы поднять её оттуда,
+            # нужны ambient capabilities, которых Kubernetes не выдаёт.
+            # Поэтому либо root с одной-единственной capability, либо
+            # ip_unprivileged_port_start на всей ноде — второе меняет правила
+            # для всех процессов машины ради одного пода.
+            runAsUser: 0
             capabilities:
+              # Сброшено всё, кроме права занять порт ниже 1024.
               drop: ["ALL"]
-              # 443 — привилегированный порт: без этой capability
-              # процесс от непривилегированного пользователя его не займёт.
               add: ["NET_BIND_SERVICE"]
       volumes:
         - name: config
