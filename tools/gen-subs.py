@@ -123,6 +123,50 @@ def main():
             "title.txt": base64.b64encode(srv["profileTitle"].encode()).decode(),
         },
     }
+    # 3. Конфиг nginx. Генерируется здесь же, потому что заголовок routing
+    #    обязан приезжать из того же источника, что и сами подписки —
+    #    иначе правила и адреса разъедутся при следующей правке.
+    routing_header = "happ://routing/add/" + base64.b64encode(
+        json.dumps(ROUTING, ensure_ascii=False).encode()
+    ).decode()
+    title_header = "base64:" + base64.b64encode(srv["profileTitle"].encode()).decode()
+    nginx_conf = f"""server {{
+  listen 8080;
+  server_name _;
+
+  # Неугаданный токен не должен отличаться от несуществующего пути:
+  # снаружи и то, и другое — обычная 404 страница сервера.
+  error_page 404 = @notfound;
+  location @notfound {{
+    default_type text/html;
+    return 404 '<html><head><title>404 Not Found</title></head><body><center><h1>404 Not Found</h1></center><hr><center>nginx</center></body></html>';
+  }}
+
+  location /sub/ {{
+    alias /srv/sub/;
+    default_type text/plain;
+    add_header profile-title "{title_header}" always;
+    add_header profile-update-interval "12" always;
+    add_header subscription-userinfo "upload=0; download=0; total=0; expire=0" always;
+    add_header routing "{routing_header}" always;
+    # Подписку кэшировать нельзя: смена сервера должна доезжать сразу.
+    add_header cache-control "no-store" always;
+  }}
+
+  location = / {{ return 404; }}
+}}
+"""
+    nginx_doc = {
+        "apiVersion": "v1",
+        "kind": "ConfigMap",
+        "metadata": {"name": "subs-nginx", "namespace": "subs"},
+        "data": {"default.conf": nginx_conf},
+    }
+    (ROOT / "apps/vps/subs/nginx.yaml").write_text(
+        yaml.safe_dump(nginx_doc, allow_unicode=True, sort_keys=False, default_style=None),
+        encoding="utf-8",
+    )
+
     subs_path = ROOT / "apps/vps/subs/content.yaml"
     subs_path.write_text(yaml.safe_dump(subs_doc, allow_unicode=True, sort_keys=False), encoding="utf-8")
     sops(["--encrypt", "--in-place", str(subs_path)])
