@@ -16,8 +16,13 @@ spec:
         # Хеш конфига в аннотации не нужен: Flux пересоздаёт под сам,
         # когда меняется Secret, только если это указать. Здесь проще —
         # конфиг меняется редко, рестарт делается коммитом в образ/манифест.
-        configVersion: "1"
+        configVersion: "2-reality"
     spec:
+      # Xray обязан слушать 443 на самой ноде: Reality работает только там,
+      # где он видит TLS-приветствие клиента первым. Через Service этого
+      # не сделать — traefik бы уже снял TLS до него.
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: xray
           # Версия пинуется. latest означал бы, что кластер меняется
@@ -25,8 +30,8 @@ spec:
           image: ghcr.io/xtls/xray-core:26.7.28
           args: ["run", "-c", "/etc/xray/config.json"]
           ports:
-            - name: xhttp
-              containerPort: 2001
+            - name: reality
+              containerPort: 443
           volumeMounts:
             - name: config
               mountPath: /etc/xray
@@ -43,6 +48,9 @@ spec:
             runAsUser: 65532
             capabilities:
               drop: ["ALL"]
+              # 443 — привилегированный порт: без этой capability
+              # процесс от непривилегированного пользователя его не займёт.
+              add: ["NET_BIND_SERVICE"]
       volumes:
         - name: config
           secret:

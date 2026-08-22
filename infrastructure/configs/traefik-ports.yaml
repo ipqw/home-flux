@@ -1,0 +1,17 @@
+# k3s ставит traefik своим helm-контроллером. Переопределить его values можно
+# только так — HelmChartConfig с тем же именем в kube-system; править сам
+# HelmChart нельзя, k3s перезапишет его при рестарте.
+#
+# Зачем: порт 443 на хосте отдаётся Xray под Reality. Traefik продолжает
+# держать 80 (там ACME) и переезжает на 8443, куда Xray проксирует весь
+# не-VPN трафик. Снаружи 8443 закрыт в ufw — он нужен только локально.
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    ports:
+      websecure:
+        exposedPort: 8443
