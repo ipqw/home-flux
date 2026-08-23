@@ -1,0 +1,14 @@
+# Один том на всё: RocksDB и загруженные файлы лежат рядом внутри
+# database_path. Это единственный каталог, который нужно бэкапить —
+# потеряешь его, и сервер придётся поднимать с нуля, а история чатов
+# у родни останется только в их телефонах.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: continuwuity-data
+  namespace: matrix
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 20Gi

@@ -1,0 +1,79 @@
+# Element Web — веб-клиент. Нужен не всем: у Матвея и у тебя будет
+# приложение на телефоне, а вот бабушке проще открыть ссылку в браузере,
+# чем ставить приложение и вбивать адрес сервера руками.
+#
+# Клиент статический: это просто набор файлов, отдаваемых nginx.
+# Никаких данных он не хранит, всё лежит на сервере.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: element-config
+  namespace: matrix
+data:
+  config.json: |
+    {
+      "default_server_config": {
+        "m.homeserver": {
+          "base_url": "https://matrix.ipqw.cc",
+          "server_name": "ipqw.cc"
+        }
+      },
+      "brand": "ipqw.cc",
+      "disable_custom_urls": true,
+      "disable_guests": true,
+      "disable_3pid_login": true,
+      "show_labs_settings": false,
+      "default_country_code": "RU",
+      "room_directory": { "servers": ["ipqw.cc"] },
+      "setting_defaults": {
+        "language": "ru",
+        "use_system_theme": false
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: element
+  namespace: matrix
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: element
+  template:
+    metadata:
+      labels:
+        app: element
+      annotations:
+        # Тот же приём, что у continuwuity: nginx читает config.json
+        # при обращении, но сам Element кэширует его агрессивно,
+        # поэтому после правки конфига под лучше пересоздать.
+        configVersion: "1"
+    spec:
+      containers:
+        - name: element
+          image: docker.io/vectorim/element-web:v1.12.26
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - name: config
+              mountPath: /app/config.json
+              subPath: config.json
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: config
+          configMap:
+            name: element-config

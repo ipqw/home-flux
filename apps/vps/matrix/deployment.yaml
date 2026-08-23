@@ -1,0 +1,82 @@
+# continuwuity — Matrix-сервер на Rust, продолжение conduwuit/Conduit.
+# Выбран вместо Synapse не из моды: Synapse на Python держит семейный
+# сервер за гигабайт-полтора памяти, continuwuity — за сотню мегабайт,
+# а на этой машине всего 5.8 ГБ и на ней уже живут VPN, музыка и DNS.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: continuwuity
+  namespace: matrix
+spec:
+  replicas: 1
+  # RocksDB не переживает двух процессов на одном каталоге, а том у нас
+  # ReadWriteOnce. Recreate гасит старый под до запуска нового.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: continuwuity
+  template:
+    metadata:
+      labels:
+        app: continuwuity
+      annotations:
+        # Меняешь конфиг — меняй и это число. Смена аннотации меняет
+        # шаблон пода, а значит под пересоздаётся и перечитывает файл.
+        configVersion: "1"
+    spec:
+      securityContext:
+        # Образ по умолчанию запускается от root. Причин для этого нет:
+        # порт непривилегированный, писать надо только в свой том.
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        # Просит kubelet выдать тому группу 1000, иначе непривилегированный
+        # процесс не сможет создать в нём базу.
+        fsGroup: 1000
+      containers:
+        - name: continuwuity
+          image: ghcr.io/continuwuity/continuwuity:v26.8.1
+          env:
+            - name: CONTINUWUITY_CONFIG
+              value: /etc/continuwuity/continuwuity.toml
+          ports:
+            - name: http
+              containerPort: 8008
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/continuwuity
+            - name: config
+              mountPath: /etc/continuwuity
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 192Mi
+            limits:
+              memory: 1Gi
+          # Первый старт разворачивает базу и может занять с полминуты,
+          # поэтому startupProbe отдельно от readiness: пока идёт запуск,
+          # под не убивают, а после — проверяют каждые десять секунд.
+          startupProbe:
+            httpGet:
+              path: /_matrix/client/versions
+              port: http
+            periodSeconds: 5
+            failureThreshold: 24
+          readinessProbe:
+            httpGet:
+              path: /_matrix/client/versions
+              port: http
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: continuwuity-data
+        - name: config
+          secret:
+            secretName: continuwuity-config

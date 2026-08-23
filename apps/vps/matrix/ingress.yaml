@@ -1,0 +1,64 @@
+# Два хоста и один чужой путь.
+#
+#   matrix.ipqw.cc   — сам сервер, сюда ходят клиенты и чужие сервера
+#   element.ipqw.cc  — веб-клиент
+#   ipqw.cc/.well-known/matrix/*  — два маленьких JSON-файла, которые
+#                      объясняют миру, что @кто-то:ipqw.cc обслуживается
+#                      на matrix.ipqw.cc. Без них имя @mama:ipqw.cc
+#                      не заработает: клиент пойдёт искать сервер на
+#                      самом ipqw.cc и упрётся в музыку.
+#
+# Правило на apex намеренно без своего блока tls: сертификат для ipqw.cc
+# уже выписан ингрессом навидрома, traefik подбирает его по имени в
+# TLS-хендшейке независимо от того, какой Ingress его заказал. Второй
+# сертификат на то же имя — лишний расход недельного лимита Let's Encrypt.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: matrix
+  namespace: matrix
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - matrix.ipqw.cc
+      secretName: matrix-tls
+    - hosts:
+        - element.ipqw.cc
+      secretName: element-tls
+  rules:
+    - host: matrix.ipqw.cc
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: continuwuity
+                port:
+                  number: 8008
+    - host: element.ipqw.cc
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: element
+                port:
+                  number: 80
+    - host: ipqw.cc
+      http:
+        paths:
+          # Traefik сортирует правила по длине: этот путь длиннее, чем
+          # "/" у навидрома, поэтому выигрывает он, а всё остальное на
+          # apex по-прежнему уходит в музыку.
+          - path: /.well-known/matrix
+            pathType: Prefix
+            backend:
+              service:
+                name: continuwuity
+                port:
+                  number: 8008
