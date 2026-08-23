@@ -22,14 +22,14 @@ spec:
       labels:
         app: livekit
       annotations:
-        configVersion: "1"
+        configVersion: "cf740a63"
     spec:
       # Та же грабля, что уронила Matrix: Service `livekit` в этом namespace
       # превращается в переменную LIVEKIT_PORT=tcp://10.43.x.x:7880, а
       # LiveKit читает свой порт из переменной с тем же именем и падает.
       # Отключаем инжект целиком — сервисы находят друг друга через DNS.
       enableServiceLinks: false
-      # Медиа приходит на UDP 443 хоста. Без hostNetwork пакеты шли бы через
+      # Медиа приходит на UDP 3478 хоста. Без hostNetwork пакеты шли бы через
       # NAT контейнера, а на этом сервере ufw режет проброшенный трафик
       # (`deny (routed)`), и звонок молча не соединялся бы.
       #
@@ -46,7 +46,7 @@ spec:
             - name: signal
               containerPort: 7880
             - name: media
-              containerPort: 443
+              containerPort: 3478
               protocol: UDP
           volumeMounts:
             - name: config
@@ -65,16 +65,8 @@ spec:
             periodSeconds: 10
           securityContext:
             allowPrivilegeEscalation: false
-            # Тот же размен, что у xray: порт 443 ниже тысячи, а занять
-            # такой порт может только процесс с NET_BIND_SERVICE. Для
-            # non-root эта capability попадает лишь в permitted-набор и
-            # не поднимается в effective без ambient capabilities, которых
-            # Kubernetes не выдаёт. Поэтому root с одной единственной
-            # разрешённой возможностью — всё остальное снято.
-            runAsUser: 0
             capabilities:
               drop: ["ALL"]
-              add: ["NET_BIND_SERVICE"]
       volumes:
         - name: config
           secret:
