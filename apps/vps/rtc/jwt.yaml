@@ -22,9 +22,10 @@ spec:
       annotations:
         configVersion: "1"
     spec:
+      enableServiceLinks: false
       containers:
         - name: lk-jwt
-          image: ghcr.io/element-hq/lk-jwt-service:v0.6.0
+          image: ghcr.io/element-hq/lk-jwt-service:0.6.0
           env:
             - name: LIVEKIT_JWT_BIND
               value: ":8081"
