@@ -56,8 +56,11 @@ spec:
         - name: element
           image: docker.io/vectorim/element-web:v1.12.26
           ports:
+            # В метаданных образа объявлен 8080, но nginx внутри слушает 80:
+            # entrypoint генерирует конфиг из шаблона с дефолтным listen.
+            # Проверено обращением изнутри пода, а не по документации.
             - name: http
-              containerPort: 8080
+              containerPort: 80
           volumeMounts:
             - name: config
               mountPath: /app/config.json
