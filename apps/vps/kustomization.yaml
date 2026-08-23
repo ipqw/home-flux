@@ -6,3 +6,4 @@ resources:
   - adguard
   - xray
   - matrix
+  - rtc

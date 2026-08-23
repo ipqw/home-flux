@@ -1,0 +1,96 @@
+# Element Call — сам интерфейс звонка: сетка с лицами, кнопки микрофона
+# и камеры, шеринг экрана. Статика, отдаётся nginx.
+#
+# Зачем свой, если есть публичный call.element.io: во-первых, звонок
+# родни не должен зависеть от чужого сервиса, во-вторых, домен element.io
+# в РФ ходит через раз, а call.ipqw.cc приезжает через тот же 443, что
+# и всё остальное.
+#
+# Телефонам он не нужен: Element X несёт интерфейс звонка внутри себя.
+# Этот под — ради браузера.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: element-call-config
+  namespace: rtc
+data:
+  config.json: |
+    {
+      "default_server_config": {
+        "m.homeserver": {
+          "base_url": "https://matrix.ipqw.cc",
+          "server_name": "ipqw.cc"
+        }
+      },
+      "livekit": {
+        "livekit_service_url": "https://livekit.ipqw.cc"
+      },
+      "features": {
+        "feature_use_device_session_member_events": true
+      },
+      "matrix_rtc_mode": "compatibility",
+      "matrix_rtc_session": {
+        "wait_for_key_rotation_ms": 3000,
+        "membership_event_expiry_ms": 180000000,
+        "delayed_leave_event_delay_ms": 18000,
+        "delayed_leave_event_restart_ms": 4000,
+        "network_error_retry_ms": 100
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: element-call
+  namespace: rtc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: element-call
+  template:
+    metadata:
+      labels:
+        app: element-call
+      annotations:
+        configVersion: "1"
+    spec:
+      containers:
+        - name: element-call
+          image: ghcr.io/element-hq/element-call:v0.24.0
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - name: config
+              mountPath: /app/config.json
+              subPath: config.json
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: config
+          configMap:
+            name: element-call-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: element-call
+  namespace: rtc
+spec:
+  selector:
+    app: element-call
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

@@ -1,0 +1,81 @@
+# LiveKit — SFU, то есть сервер, через который идёт весь звук и видео.
+#
+# Почему не «напрямую между собеседниками»: у мобильных операторов обе
+# стороны сидят за CGNAT, прямой путь между телефонами не находится.
+# Раньше для этого ставили отдельный coturn-ретранслятор; SFU выполняет
+# ту же работу заодно, потому что потоки и так идут через него.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: livekit
+  namespace: rtc
+spec:
+  replicas: 1
+  # hostNetwork плюс фиксированный порт: два пода на одном порту не встанут.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: livekit
+  template:
+    metadata:
+      labels:
+        app: livekit
+      annotations:
+        configVersion: "1"
+    spec:
+      # Медиа приходит на UDP 443 хоста. Без hostNetwork пакеты шли бы через
+      # NAT контейнера, а на этом сервере ufw режет проброшенный трафик
+      # (`deny (routed)`), и звонок молча не соединялся бы.
+      #
+      # Побочный эффект: сигнальные 7880/7881 тоже оказываются на хосте.
+      # Снаружи они закрыты — ufw пускает только 22, 80, 443 и подсети
+      # кластера, — а traefik ходит из 10.42.0.0/16, которой доступ разрешён.
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: livekit
+          image: docker.io/livekit/livekit-server:v1.9.9
+          args: ["--config", "/etc/livekit/livekit.yaml"]
+          ports:
+            - name: signal
+              containerPort: 7880
+            - name: media
+              containerPort: 443
+              protocol: UDP
+          volumeMounts:
+            - name: config
+              mountPath: /etc/livekit
+              readOnly: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 768Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 7880
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: config
+          secret:
+            secretName: livekit-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: livekit
+  namespace: rtc
+spec:
+  selector:
+    app: livekit
+  ports:
+    - name: signal
+      port: 7880
+      targetPort: 7880

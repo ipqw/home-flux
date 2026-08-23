@@ -1,0 +1,73 @@
+# lk-jwt-service — мостик между Matrix и LiveKit.
+#
+# LiveKit ничего не знает про Matrix: ему нужен подписанный пропуск.
+# Этот сервис проверяет у нашего сервера, что человек действительно
+# @кто-то:ipqw.cc, и только тогда выписывает пропуск в комнату звонка.
+# Без него пришлось бы либо раздать секрет LiveKit клиентам, либо
+# открыть создание конференций кому угодно.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lk-jwt
+  namespace: rtc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lk-jwt
+  template:
+    metadata:
+      labels:
+        app: lk-jwt
+      annotations:
+        configVersion: "1"
+    spec:
+      containers:
+        - name: lk-jwt
+          image: ghcr.io/element-hq/lk-jwt-service:v0.6.0
+          env:
+            - name: LIVEKIT_JWT_BIND
+              value: ":8081"
+            # Адрес, который сервис назовёт клиенту: куда слать медиа.
+            - name: LIVEKIT_URL
+              value: wss://livekit.ipqw.cc
+            # Кому разрешено заводить звонки. Звёздочка здесь означала бы
+            # «любой сервер, который до нас дотянулся» — вписан только наш.
+            - name: LIVEKIT_FULL_ACCESS_HOMESERVERS
+              value: ipqw.cc
+            - name: LIVEKIT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: livekit-keys
+                  key: key
+            - name: LIVEKIT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: livekit-keys
+                  key: secret
+          ports:
+            - name: http
+              containerPort: 8081
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lk-jwt
+  namespace: rtc
+spec:
+  selector:
+    app: lk-jwt
+  ports:
+    - name: http
+      port: 8081
+      targetPort: http

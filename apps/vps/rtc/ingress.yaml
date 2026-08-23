@@ -1,0 +1,64 @@
+# Два имени.
+#
+#   livekit.ipqw.cc — и сигнальный канал LiveKit, и выдача пропусков.
+#                     Разделение по путям: четыре служебных пути уходят
+#                     в lk-jwt-service, всё остальное — в LiveKit.
+#                     Так задумано авторами: клиент видит один адрес.
+#   call.ipqw.cc    — интерфейс звонка для браузера.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rtc
+  namespace: rtc
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - livekit.ipqw.cc
+      secretName: livekit-tls
+    - hosts:
+        - call.ipqw.cc
+      secretName: call-tls
+  rules:
+    - host: livekit.ipqw.cc
+      http:
+        paths:
+          # Пути длиннее «/», поэтому traefik выберет их первыми.
+          - path: /sfu/get
+            pathType: Prefix
+            backend: &jwt
+              service:
+                name: lk-jwt
+                port:
+                  number: 8081
+          - path: /get_token
+            pathType: Prefix
+            backend: *jwt
+          - path: /healthz
+            pathType: Prefix
+            backend: *jwt
+          - path: /livekit/jwt
+            pathType: Prefix
+            backend: *jwt
+          - path: /delegate_delayed_leave
+            pathType: Prefix
+            backend: *jwt
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: livekit
+                port:
+                  number: 7880
+    - host: call.ipqw.cc
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: element-call
+                port:
+                  number: 80

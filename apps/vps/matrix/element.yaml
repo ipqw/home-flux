@@ -26,6 +26,11 @@ data:
       "show_labs_settings": false,
       "default_country_code": "RU",
       "room_directory": { "servers": ["ipqw.cc"] },
+      "element_call": {
+        "url": "https://call.ipqw.cc",
+        "use_exclusively": true,
+        "brand": "Звонки"
+      },
       "setting_defaults": {
         "language": "ru",
         "use_system_theme": false
@@ -50,7 +55,7 @@ spec:
         # Тот же приём, что у continuwuity: nginx читает config.json
         # при обращении, но сам Element кэширует его агрессивно,
         # поэтому после правки конфига под лучше пересоздать.
-        configVersion: "1"
+        configVersion: "2"
     spec:
       containers:
         - name: element
