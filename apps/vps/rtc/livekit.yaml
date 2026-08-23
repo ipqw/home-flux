@@ -65,8 +65,16 @@ spec:
             periodSeconds: 10
           securityContext:
             allowPrivilegeEscalation: false
+            # Тот же размен, что у xray: порт 443 ниже тысячи, а занять
+            # такой порт может только процесс с NET_BIND_SERVICE. Для
+            # non-root эта capability попадает лишь в permitted-набор и
+            # не поднимается в effective без ambient capabilities, которых
+            # Kubernetes не выдаёт. Поэтому root с одной единственной
+            # разрешённой возможностью — всё остальное снято.
+            runAsUser: 0
             capabilities:
               drop: ["ALL"]
+              add: ["NET_BIND_SERVICE"]
       volumes:
         - name: config
           secret:
