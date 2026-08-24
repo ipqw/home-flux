@@ -1,0 +1,27 @@
+# Домашний кластер. Отличий от vps два, и оба принципиальные:
+#
+# 1. Нет infrastructure-слоя. cert-manager здесь не нужен: TLS для домашних
+#    доменов терминирует VPS, а от VPS до дома трафик идёт внутри WireGuard,
+#    который шифрует сам. Один issuer на два кластера — и лимиты Let's Encrypt
+#    считаются в одном месте.
+# 2. Нет dependsOn — зависеть не от чего.
+#
+# decryption оставлен: секреты приложений (пароли БД, токены) шифруются тем же
+# age-ключом, что и на vps.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: apps
+  namespace: flux-system
+spec:
+  interval: 1m
+  path: ./apps/home
+  prune: true
+  wait: false
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age

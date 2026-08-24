@@ -1,0 +1,5 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# Пусто до первого приложения. Каркас нужен, чтобы Kustomization "apps"
+# в clusters/home сходился, а не висел в ошибке "path not found".
+resources: []
