@@ -32,7 +32,9 @@ spec:
       containers:
         - name: wstunnel
           image: ghcr.io/erebe/wstunnel:v10.6.2
+          # ENTRYPOINT образа — dumb-init, поэтому имя бинарника нужно передать явно.
           args:
+            - wstunnel
             - server
             - ws://0.0.0.0:8080
             - --restrict-to
