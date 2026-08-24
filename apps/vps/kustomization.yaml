@@ -8,3 +8,4 @@ resources:
   - matrix
   - rtc
   - wstunnel
+  - home-bridge

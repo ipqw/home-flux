@@ -1,0 +1,37 @@
+# Мост «домены домашних сервисов → домашний кластер».
+#
+# Здесь нет ни одного пода. Service без селектора плюс EndpointSlice, набитый
+# вручную, — штатный способ сказать traefik: «этот бэкенд живёт вне кластера,
+# вот его адрес». Адрес 10.8.0.2 — домашняя нода на том конце туннеля.
+#
+# Каждый новый домашний сервис добавляется одним host-блоком в Ingress ниже:
+# внутрь дома всё равно едет один и тот же traefik на 10.8.0.2:80, а какой
+# сервис отдать, домашний traefik решает сам по заголовку Host.
+apiVersion: v1
+kind: Service
+metadata:
+  name: home-traefik
+  namespace: home-bridge
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: home-traefik
+  namespace: home-bridge
+  labels:
+    kubernetes.io/service-name: home-traefik
+addressType: IPv4
+ports:
+  - name: http
+    port: 80
+    protocol: TCP
+endpoints:
+  - addresses:
+      - 10.8.0.2
+    conditions:
+      ready: true

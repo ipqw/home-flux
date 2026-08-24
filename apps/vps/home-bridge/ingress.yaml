@@ -1,0 +1,27 @@
+# TLS для домашних доменов терминируется ЗДЕСЬ, на VPS. cert-manager один
+# на оба кластера — лимиты Let's Encrypt считаются в одном месте, а домашний
+# кластер вовсе не смотрит наружу.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: home-services
+  namespace: home-bridge
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - vw.ipqw.cc
+      secretName: home-services-tls
+  rules:
+    - host: vw.ipqw.cc
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: home-traefik
+                port:
+                  number: 80

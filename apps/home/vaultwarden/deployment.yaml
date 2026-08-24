@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vaultwarden
+  namespace: vaultwarden
+spec:
+  replicas: 1
+  # SQLite не терпит двух пишущих процессов: при RollingUpdate новый под
+  # поднимется раньше, чем умрёт старый, и оба откроют одну базу.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: vaultwarden
+  template:
+    metadata:
+      labels:
+        app: vaultwarden
+    spec:
+      enableServiceLinks: false
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: vaultwarden
+          image: vaultwarden/server:1.37.2
+          env:
+            # Без этого ломаются WebAuthn, ссылки в письмах и вложения:
+            # сервер должен знать своё внешнее имя, а он его за прокси не видит.
+            - name: DOMAIN
+              value: "https://vw.ipqw.cc"
+            # Дефолтные 80 недоступны непривилегированному пользователю.
+            - name: ROCKET_PORT
+              value: "8080"
+            # Открыто ТОЛЬКО на время первой регистрации. Сразу после неё —
+            # в false, иначе на публичном домене может зарегистрироваться кто угодно.
+            - name: SIGNUPS_ALLOWED
+              value: "true"
+            # ADMIN_TOKEN не задан намеренно — без него Vaultwarden сам отключает
+            # /admin. Без SMTP админка умеет немногое, а на публичном домене это
+            # лишняя поверхность атаки.
+            - name: LOG_LEVEL
+              value: "warn"
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /alive
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 30
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: vaultwarden-data

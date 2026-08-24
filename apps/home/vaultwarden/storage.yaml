@@ -1,0 +1,15 @@
+# Хранилище паролей. Объём смешной — база это SQLite с зашифрованными записями,
+# вес дают только вложения. 2 ГБ хватает с запасом на годы.
+#
+# ВАЖНО: local-path на k3s кладёт данные в каталог ноды. Это единственная копия,
+# бэкапа пока нет — он идёт отдельным пунктом плана.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vaultwarden-data
+  namespace: vaultwarden
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 2Gi
