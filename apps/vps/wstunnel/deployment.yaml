@@ -1,0 +1,62 @@
+# wstunnel — обёртка для WireGuard, а не VPN сам по себе.
+#
+# Зачем он вообще нужен. Домашний провайдер режет WireGuard: обычный UDP
+# того же размера на тот же порт проходит, а пакет с сигнатурой WireGuard —
+# нет. Смена порта помогает на минуту-две, дальше DPI доопределяет поток по
+# поведению и убивает его. Проверено на живом канале 24.08.
+#
+# Что делает эта конструкция: UDP-датаграммы WireGuard едут внутри
+# WebSocket поверх TLS на 443 — то есть выглядят как обычный HTTPS к сайту.
+# Этот канал на домашнем провайдере работает (им же ходит Reality).
+#
+# --restrict-to жёстко прибивает единственный разрешённый адрес назначения.
+# Без него любой, кто угадает путь, получит открытый прокси наружу.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wstunnel
+  namespace: wstunnel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wstunnel
+  template:
+    metadata:
+      labels:
+        app: wstunnel
+    spec:
+      # Service wstunnel иначе подставит WSTUNNEL_PORT=tcp://... в окружение —
+      # той же граблей уже падали continuwuity и livekit.
+      enableServiceLinks: false
+      containers:
+        - name: wstunnel
+          image: ghcr.io/erebe/wstunnel:v10.6.2
+          args:
+            - server
+            - ws://0.0.0.0:8080
+            - --restrict-to
+            - 178.162.245.68:39572
+            - --restrict-http-upgrade-path-prefix
+            - $(PATH_PREFIX)
+          env:
+            - name: PATH_PREFIX
+              valueFrom:
+                secretKeyRef:
+                  name: wstunnel-auth
+                  key: path-prefix
+          ports:
+            - name: ws
+              containerPort: 8080
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]

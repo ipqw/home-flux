@@ -1,0 +1,26 @@
+# Отдельный домен, а не путь на существующем: так туннель не мешает
+# ACME-проверкам соседей и его видно в логах traefik отдельной строкой.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wstunnel
+  namespace: wstunnel
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - wg.ipqw.cc
+      secretName: wstunnel-tls
+  rules:
+    - host: wg.ipqw.cc
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: wstunnel
+                port:
+                  number: 8080
