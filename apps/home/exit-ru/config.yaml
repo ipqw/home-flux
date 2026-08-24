@@ -1,0 +1,31 @@
+# Выход в интернет с российского абонентского адреса.
+#
+# Зачем: банки, маркетплейсы и госсервисы не пускают с адресов датацентров —
+# их IP лежат в базах VPN/proxy (MaxMind, IP2Proxy), и наш VPS в Leaseweb
+# под это попадает. Домашний Ростелеком выглядит обычным абонентом.
+#
+# Здесь голый SOCKS5 без аутентификации, и это осознанно: слушает он только
+# на 10.8.0.2 — адресе туннеля, — а туда попадает исключительно VPS.
+# Из локальной сети и из интернета порт недоступен.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: exit-ru-config
+  namespace: exit-ru
+data:
+  config.json: |
+    {
+      "log": { "loglevel": "warning" },
+      "inbounds": [
+        {
+          "tag": "socks-in",
+          "listen": "0.0.0.0",
+          "port": 1080,
+          "protocol": "socks",
+          "settings": { "auth": "noauth", "udp": true }
+        }
+      ],
+      "outbounds": [
+        { "tag": "direct", "protocol": "freedom" }
+      ]
+    }

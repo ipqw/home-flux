@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exit-ru
+  namespace: exit-ru
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exit-ru
+  template:
+    metadata:
+      labels:
+        app: exit-ru
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: xray
+          image: ghcr.io/xtls/xray-core:26.7.28
+          args: ["-c", "/etc/xray/config.json"]
+          ports:
+            # hostIP прибивает слушателя к адресу туннеля. Без него hostPort
+            # повесил бы SOCKS на все интерфейсы, включая локальную сеть.
+            - name: socks
+              containerPort: 1080
+              hostPort: 1080
+              hostIP: 10.8.0.2
+          volumeMounts:
+            - name: config
+              mountPath: /etc/xray
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+      volumes:
+        - name: config
+          configMap:
+            name: exit-ru-config
