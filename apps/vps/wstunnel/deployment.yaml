@@ -58,9 +58,10 @@ spec:
             limits:
               memory: 128Mi
           securityContext:
-            # runAsUser не задаём: /home/app доступен только пользователю образа,
-            # чужой uid каталог не прочитает.
+            # uid 1000 = пользователь app из образа. Числом, а не именем:
+            # runAsNonRoot умеет проверять только числовой uid и на имени падает.
             runAsNonRoot: true
+            runAsUser: 1000
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
