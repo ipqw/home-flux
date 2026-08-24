@@ -32,9 +32,10 @@ spec:
       containers:
         - name: wstunnel
           image: ghcr.io/erebe/wstunnel:v10.6.2
-          # ENTRYPOINT образа — dumb-init, поэтому имя бинарника нужно передать явно.
+          # ENTRYPOINT образа — dumb-init, а сам бинарник лежит в /home/app и в PATH
+          # не попадает, поэтому путь передаётся полностью.
           args:
-            - wstunnel
+            - /home/app/wstunnel
             - server
             - ws://0.0.0.0:8080
             - --restrict-to
@@ -57,8 +58,9 @@ spec:
             limits:
               memory: 128Mi
           securityContext:
+            # runAsUser не задаём: /home/app доступен только пользователю образа,
+            # чужой uid каталог не прочитает.
             runAsNonRoot: true
-            runAsUser: 65532
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
