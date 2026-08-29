@@ -267,6 +267,9 @@ footer{background:var(--ink);color:#79838d;padding-block:2.2rem;font-size:.86rem
 footer .f-in{display:grid;gap:.5rem}
 footer b{color:#c3cad2;font-weight:600}
 footer a{color:#c3cad2}
+/* Домен — то, что страница просит запомнить: он не должен рваться
+   посреди слова на узком экране. */
+footer .dom-link{white-space:nowrap}
 footer .legal{font-family:"GA Mono",monospace;font-size:.76rem;letter-spacing:.04em}
 
 /* ---------- движение ---------- */
@@ -390,7 +393,7 @@ footer .legal{font-family:"GA Mono",monospace;font-size:.76rem;letter-spacing:.0
 
 <footer>
   <div class="wrap f-in">
-    <div><b>© Грей Авто, 2026.</b> Официальный сайт: <a href="https://xn----8sbgb4a7aju8g.xn--p1ai/">грэй-авто.рф</a></div>
+    <div><b>© Грей Авто, 2026.</b> Официальный сайт: <a class="dom-link" href="https://xn----8sbgb4a7aju8g.xn--p1ai/">грэй-авто.рф</a></div>
     <div class="legal">ООО «Грэй-Авто» · ОГРН 1186313101369</div>
     <div><a href="tel:+79608507507">+7 960 850-75-07</a> · пос. Приморский, ул. Спортивная, 2Г</div>
   </div>
