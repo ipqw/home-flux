@@ -56,6 +56,7 @@ h2{
   font-family:"GA Display","GA Sans",sans-serif;font-weight:900;
   text-transform:uppercase;letter-spacing:.005em;line-height:.95;
   font-size:clamp(1.9rem,1.2rem + 3.4vw,3.4rem);margin:0 0 1.6rem;
+  text-wrap:balance;
 }
 
 /* ---------- шапка ---------- */
@@ -116,7 +117,7 @@ h1{
 }
 h1 .lede{display:block;color:#fff}
 h1 .sub{
-  display:block;color:var(--signal);
+  display:block;color:var(--signal);text-wrap:balance;
   font-size:clamp(1.15rem,.55rem + 2.5vw,2.35rem);line-height:1.02;margin-top:.35rem;
 }
 .hero p.claim{
@@ -155,6 +156,7 @@ h1 .sub{
   display:flex;align-items:center;gap:.7rem;margin:.8rem 0 .7rem;
   font-family:"GA Display","GA Sans",sans-serif;font-weight:900;
   text-transform:uppercase;font-size:clamp(1.25rem,.9rem + 1.6vw,1.9rem);line-height:1;
+  text-wrap:balance;
 }
 .alert-head svg{flex:none}
 .alert p{margin:0 0 .8rem;max-width:68ch}
@@ -187,6 +189,8 @@ h1 .sub{
 .card h3{
   font-family:"GA Display","GA Sans",sans-serif;font-weight:900;
   text-transform:uppercase;font-size:1.45rem;line-height:1.02;margin:0 0 .6rem;
+  /* иначе «Подготовка на СВО» роняет «СВО» отдельной строкой */
+  text-wrap:balance;
 }
 .card p{margin:0;color:var(--ink-soft)}
 
