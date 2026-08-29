@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: grey-auto
+resources:
+  - namespace.yaml
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+
+# Содержимое сайта лежит обычными файлами — их видно в git diff как текст,
+# а не как экранированную строку внутри YAML. Хеш в имени ConfigMap
+# kustomize подставит и в Deployment, поэтому правка страницы сама
+# перезапускает под.
+configMapGenerator:
+  - name: grey-auto-site
+    files:
+      - site/index.html
+      - site/robots.txt
+      - site/sitemap.xml
+  - name: grey-auto-nginx
+    files:
+      - nginx/default.conf

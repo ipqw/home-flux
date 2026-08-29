@@ -9,3 +9,4 @@ resources:
   - rtc
   - wstunnel
   - home-bridge
+  - grey-auto

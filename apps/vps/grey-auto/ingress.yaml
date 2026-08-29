@@ -1,0 +1,146 @@
+# Домены записаны в punycode: Kubernetes принимает в host только ASCII,
+# кириллица здесь невалидна. Это те же самые домены.
+#
+#   грэй-авто.рф  → xn----8sbgb4a7aju8g.xn--p1ai   основной, отдаёт сайт
+#   грей-авто.рф  → xn----8sbgbky2bkx.xn--p1ai     301 на основной
+#
+# Сертификаты выпускает cert-manager по HTTP-01 — проверка приходит на порт 80,
+# который у traefik публичный. Предпосылка: A-записи обоих доменов уже указывают
+# на этот сервер, иначе Let's Encrypt проверку не пройдёт. Второму домену
+# сертификат нужен не для показа сайта, а чтобы браузер дошёл до редиректа:
+# без него https://грей-авто.рф упрётся в ошибку сертификата раньше 301.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: https-redirect
+  namespace: grey-auto
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+---
+# Второе написание домена — через «е» вместо «э». Люди набирают его на слух,
+# поэтому это не отдельный сайт, а указатель на основной: 301 с сохранением пути.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: to-primary
+  namespace: grey-auto
+spec:
+  redirectRegex:
+    regex: "^https?://xn----8sbgbky2bkx\\.xn--p1ai/(.*)"
+    replacement: "https://xn----8sbgb4a7aju8g.xn--p1ai/${1}"
+    permanent: true
+---
+# В зонах обоих доменов стоит A www → эта же нода. Без правила traefik ответил бы
+# на www голым 404, поэтому www просто снимается: www.<домен> → <домен>.
+# Для алиаса это даёт два прыжка (www.грей → грей → грэй) — приемлемо, зато
+# правило одно на все четыре имени вместо отдельного middleware на каждое.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-www
+  namespace: grey-auto
+spec:
+  redirectRegex:
+    regex: "^https?://www\\.(.*)"
+    replacement: "https://${1}"
+    permanent: true
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grey-auto
+  namespace: grey-auto
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    # Редирект вешается только на этот роутер. ACME-проверка ходит
+    # по собственному Ingress, который cert-manager создаёт сам,
+    # и под редирект не попадает.
+    traefik.ingress.kubernetes.io/router.middlewares: grey-auto-https-redirect@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - xn----8sbgb4a7aju8g.xn--p1ai
+      secretName: grey-auto-tls
+  rules:
+    - host: xn----8sbgb4a7aju8g.xn--p1ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: grey-auto
+                port:
+                  number: 80
+---
+# www основного домена — отдельным роутером, потому что у него свой middleware
+# (снять www) и своё имя в сертификате.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grey-auto-www
+  namespace: grey-auto
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.middlewares: grey-auto-https-redirect@kubernetescrd,grey-auto-strip-www@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - www.xn----8sbgb4a7aju8g.xn--p1ai
+        - www.xn----8sbgbky2bkx.xn--p1ai
+      secretName: grey-auto-www-tls
+  rules:
+    - host: www.xn----8sbgb4a7aju8g.xn--p1ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: grey-auto
+                port:
+                  number: 80
+    - host: www.xn----8sbgbky2bkx.xn--p1ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: grey-auto
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grey-auto-alias
+  namespace: grey-auto
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    # Сначала на https, потом на основной домен — цепочка из двух middleware
+    # в порядке перечисления.
+    traefik.ingress.kubernetes.io/router.middlewares: grey-auto-https-redirect@kubernetescrd,grey-auto-to-primary@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - xn----8sbgbky2bkx.xn--p1ai
+      secretName: grey-auto-alias-tls
+  rules:
+    - host: xn----8sbgbky2bkx.xn--p1ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            # До сервиса дело не доходит — middleware отвечает раньше.
+            # Backend здесь обязателен по схеме Ingress, не более того.
+            backend:
+              service:
+                name: grey-auto
+                port:
+                  number: 80
