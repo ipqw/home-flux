@@ -1,0 +1,31 @@
+# Что source-controller Flux НЕ кладёт в артефакт репозитория.
+# Файл повторяет встроенный список по умолчанию — он нужен только ради
+# одного исключения в конце: без него og.png сайта grey-auto не попадает
+# в артефакт, и kustomize в кластере падает на configMapGenerator
+# («open .../site/og.png: no such file or directory»), а раскатка стоит.
+.git/
+.gitignore
+.gitmodules
+.gitattributes
+*.jpg
+*.jpeg
+*.gif
+*.png
+*.wmv
+*.flv
+*.tar.gz
+*.zip
+.github/
+.circleci/
+.travis.yml
+.gitlab-ci.yml
+appveyor.yml
+.drone.yml
+cloudbuild.yaml
+codeship-services.yml
+codeship-steps.yml
+**/.goreleaser.yml
+**/.sops.yaml
+**/.flux.yaml
+# превью grey-auto для мессенджеров — нужно в ConfigMap
+!apps/vps/grey-auto/site/og.png
