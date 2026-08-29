@@ -165,7 +165,12 @@ h1 .sub{
 
 /* ---------- услуги ---------- */
 .grid{display:grid;gap:1px;background:var(--concrete-dim);border:1px solid var(--concrete-dim)}
-@media(min-width:760px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:760px){
+  .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  /* subgrid: тег, заголовок и описание встают на одну линию во всех
+     трёх карточках, даже когда заголовок занимает две строки. */
+  .card{display:grid;grid-row:span 3;grid-template-rows:subgrid;row-gap:0}
+}
 .card{
   background:var(--concrete);padding:clamp(1.35rem,3vw,2rem);
   transition:background .18s ease;
