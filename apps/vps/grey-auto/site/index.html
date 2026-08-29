@@ -3,22 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Грэй Авто — автосервис под Тольятти | Официальный сайт</title>
-<meta name="description" content="Грэй Авто — ремонт и обслуживание автомобилей и бронеавтомобилей. Пос. Приморский, Ставропольский район, ул. Спортивная 2Г. Телефон +7 960 850-75-07.">
+<title>Грэй-Авто — автосервис под Тольятти | Официальный сайт</title>
+<meta name="description" content="Грэй-Авто — ремонт и обслуживание легковых автомобилей. Автомобили из-за рубежа не поставляем. Пос. Приморский, Ставропольский район, ул. Спортивная 2Г. Телефон +7 960 850-75-07.">
 <link rel="canonical" href="https://xn----8sbgb4a7aju8g.xn--p1ai/">
 <meta name="robots" content="index, follow">
 <meta name="theme-color" content="#12161b">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Грэй Авто">
-<meta property="og:title" content="Грэй Авто — автосервис под Тольятти">
-<meta property="og:description" content="Ремонт и обслуживание автомобилей и бронеавтомобилей. Пос. Приморский, ул. Спортивная 2Г. +7 960 850-75-07.">
+<meta property="og:site_name" content="Грэй-Авто">
+<meta property="og:title" content="Грэй-Авто — автосервис под Тольятти">
+<meta property="og:description" content="Ремонт и обслуживание легковых автомобилей. Пос. Приморский, ул. Спортивная 2Г. +7 960 850-75-07.">
 <meta property="og:url" content="https://xn----8sbgb4a7aju8g.xn--p1ai/">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:image" content="https://xn----8sbgb4a7aju8g.xn--p1ai/og.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Грэй Авто — ремонт автомобилей в Приморском под Тольятти. +7 960 850-75-07">
+<meta property="og:image:alt" content="Грэй-Авто — ремонт автомобилей в Приморском под Тольятти. +7 960 850-75-07">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://xn----8sbgb4a7aju8g.xn--p1ai/og.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2312161b'/%3E%3Cpath d='M4 22V10h9v4h-5v4h3v-2h2v6z' fill='%23f2b01e'/%3E%3C/svg%3E">
@@ -75,7 +75,7 @@ h2{
   /* липнет вся шапка, но со сдвигом на высоту объявления: при скролле
      объявление уходит за верх, строка с телефоном остаётся на месте.
      Без JS — одно отрицательное значение top. */
-  --notice-h:34px;--nav-h:0px;
+  --notice-h:64px;--nav-h:0px;
   /* 1px — граница объявления */
   position:sticky;top:calc(-1 * (var(--notice-h) + 1px + var(--nav-h)));z-index:20;
   background:var(--void);color:#fff;border-bottom:1px solid var(--steel-line);
@@ -86,12 +86,14 @@ h2{
 }
 .notice-in{
   max-width:var(--wrap);margin:0 auto;padding:0 var(--pad);
-  height:var(--notice-h);display:flex;align-items:center;gap:.55rem;
-  font-size:.83rem;font-weight:600;line-height:1;
+  height:var(--notice-h);display:flex;align-items:center;gap:.8rem;
+  font-size:1.5rem;font-weight:800;line-height:1.1;
 }
 .notice svg{flex:none}
 .notice .m{display:none}
-.notice p{margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* текст в две строки, если не влезает в одну: обрезать многоточием нельзя —
+   под нож попадает «Предоплату не берём» */
+.notice p{margin:0}
 .notice a{font-weight:800;text-decoration:none;white-space:nowrap}
 .top-in{
   max-width:var(--wrap);margin:0 auto;padding:.65rem var(--pad);
@@ -140,11 +142,11 @@ h2{
 @media(max-width:560px){
   /* на узком экране объявление переносится на две строки: обрезать его
      многоточием нельзя — под нож попадает как раз домен */
-  .top{--notice-h:48px}
-  .notice-in{gap:.45rem;padding-inline:1rem}
-  .notice p{white-space:normal;line-height:1.3}
+  .top{--notice-h:98px}
+  .notice-in{gap:.6rem;padding-inline:1rem;font-size:1.15rem}
+  .notice p{line-height:1.25}
   .notice .d{display:none}.notice .m{display:inline}
-  .notice svg{width:14px;height:13px}
+  .notice svg{width:22px;height:20px}
   .brand span{display:none}
   .brand b{font-size:1.12rem}
   .top-call{font-size:.86rem;padding:.45rem .8rem}
@@ -196,7 +198,7 @@ h1 .sub{
 /* ---------- услуги ---------- */
 .grid{display:grid;gap:1px;background:var(--concrete-dim);border:1px solid var(--concrete-dim)}
 @media(min-width:760px){
-  .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   /* subgrid: тег, заголовок и описание встают на одну линию во всех
      трёх карточках, даже когда заголовок занимает две строки. */
   .card{display:grid;grid-row:span 3;grid-template-rows:subgrid;row-gap:0}
@@ -332,12 +334,12 @@ footer .legal{font-size:.8rem}
 <header class="top">
   <div class="notice">
     <div class="notice-in">
-      <svg width="15" height="14" viewBox="0 0 30 27" aria-hidden="true"><path d="M15 1.8 29 25.2H1z" fill="none" stroke="#0f1216" stroke-width="3" stroke-linejoin="round"/><path d="M15 9.5v7.2" stroke="#0f1216" stroke-width="3" stroke-linecap="round"/><circle cx="15" cy="20.6" r="1.7" fill="#0f1216"/></svg>
+      <svg width="28" height="26" viewBox="0 0 30 27" aria-hidden="true"><path d="M15 1.8 29 25.2H1z" fill="none" stroke="#0f1216" stroke-width="3" stroke-linejoin="round"/><path d="M15 9.5v7.2" stroke="#0f1216" stroke-width="3" stroke-linecap="round"/><circle cx="15" cy="20.6" r="1.7" fill="#0f1216"/></svg>
       <p>Осторожно, мошенники! <span class="d">Все услуги — только по телефону</span><span class="m">Наш телефон:</span> <a href="tel:+79608507507">+7 960 850-75-07</a>. Предоплату не берём.</p>
     </div>
   </div>
   <div class="top-in">
-    <div class="brand"><b>Грэй Авто</b><span>пос. Приморский</span></div>
+    <div class="brand"><b>Грэй-Авто</b><span>пос. Приморский</span></div>
     <nav class="nav" aria-label="Разделы">
       <a href="#services">Услуги</a>
       <a href="#about">О нас</a>
@@ -353,10 +355,10 @@ footer .legal{font-size:.8rem}
   <div class="wrap hero-in">
    <div class="hero-text">
     <h1>
-      <span class="lede">Грэй Авто</span>
+      <span class="lede">Грэй-Авто</span>
       <span class="sub">ремонт автомобилей в Приморском под Тольятти</span>
     </h1>
-    <p class="claim">Ремонт и обслуживание легковых автомобилей и бронеавтомобилей. Ставропольский район, ул. Спортивная, 2Г.</p>
+    <p class="claim">Ремонт и обслуживание легковых автомобилей. Ставропольский район, ул. Спортивная, 2Г. Поставкой автомобилей из-за рубежа не занимаемся.</p>
     <div class="hero-cta">
       <a class="call" href="tel:+79608507507"><small>Позвонить</small> +7 960 850-75-07</a>
       <span class="hours-inline">Часы работы 9:00–17:00</span>
@@ -386,11 +388,6 @@ footer .legal{font-size:.8rem}
         <p>Ремонт и обслуживание легковых автомобилей.</p>
       </article>
       <article class="card">
-        <span class="tag">бронетехника</span>
-        <h3>Бронеавтомобили</h3>
-        <p>Ремонт и обслуживание бронированных автомобилей.</p>
-      </article>
-      <article class="card">
         <span class="tag">обслуживание</span>
         <h3>Техобслуживание</h3>
         <p>Плановое ТО и диагностика — чтобы машина не подвела в дороге.</p>
@@ -404,7 +401,7 @@ footer .legal{font-size:.8rem}
     <div class="about-text">
       <p class="eyebrow">О нас</p>
       <h2>Мастерская в Приморском</h2>
-      <p class="big">«Грэй Авто» — автосервис в посёлке Приморский Ставропольского района. Ремонтируем и обслуживаем легковые автомобили, работаем с бронеавтомобилями.</p>
+      <p class="big">«Грэй-Авто» — автосервис в посёлке Приморский Ставропольского района. Ремонтируем и обслуживаем легковые автомобили. Поставкой автомобилей из-за рубежа не занимаемся — если вам предлагают «авто из Европы» от нашего имени, это не мы.</p>
     </div>
     <ol class="steps" aria-label="Как мы работаем">
       <li><b>Позвоните</b><span>Расскажите, что с машиной, — подскажем, что делать.</span></li>
@@ -436,8 +433,8 @@ footer .legal{font-size:.8rem}
 
 <footer>
   <div class="wrap f-in">
-    <div><b>© Грэй Авто, 2026.</b> Официальный сайт: <a class="dom-link" href="https://xn----8sbgb4a7aju8g.xn--p1ai/">грэй-авто.рф</a></div>
-    <div class="legal">ООО «Грэй-Авто» · ОГРН 1186313101369</div>
+    <div><b>© Грэй-Авто, 2026.</b> Официальный сайт: <a class="dom-link" href="https://xn----8sbgb4a7aju8g.xn--p1ai/">грэй-авто.рф</a></div>
+    <div class="legal">ООО «Грэй-Авто» · ИНН 6321453878 · ОГРН 1186313101369</div>
     <div><a href="tel:+79608507507">+7 960 850-75-07</a> · пос. Приморский, ул. Спортивная, 2Г</div>
   </div>
 </footer>
@@ -446,10 +443,13 @@ footer .legal{font-size:.8rem}
 {
   "@context": "https://schema.org",
   "@type": "AutoRepair",
-  "name": "Грэй Авто",
+  "name": "Грэй-Авто",
+  "legalName": "ООО «Грэй-Авто»",
+  "taxID": "6321453878",
+  "identifier": {"@type": "PropertyValue", "propertyID": "ОГРН", "value": "1186313101369"},
   "url": "https://xn----8sbgb4a7aju8g.xn--p1ai/",
   "telephone": "+7-960-850-75-07",
-  "description": "Ремонт и обслуживание автомобилей и бронеавтомобилей.",
+  "description": "Ремонт и обслуживание легковых автомобилей. Поставкой автомобилей из-за рубежа не занимается.",
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "ул. Спортивная, 2Г",
@@ -463,7 +463,6 @@ footer .legal{font-size:.8rem}
     "name": "Услуги",
     "itemListElement": [
       {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Ремонт и обслуживание автомобилей"}},
-      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Ремонт и обслуживание бронеавтомобилей"}},
       {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Техническое обслуживание и диагностика"}}
     ]
   }
