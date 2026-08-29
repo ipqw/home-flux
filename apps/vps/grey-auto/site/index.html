@@ -69,9 +69,25 @@ h2{
 
 /* ---------- шапка ---------- */
 .top{
-  position:sticky;top:0;z-index:20;background:var(--void);color:#fff;
-  border-bottom:1px solid var(--steel-line);
+  /* липнет вся шапка, но со сдвигом на высоту объявления: при скролле
+     объявление уходит за верх, строка с телефоном остаётся на месте.
+     Без JS — одно отрицательное значение top. */
+  --notice-h:34px;
+  position:sticky;top:calc(-1 * var(--notice-h));z-index:20;
+  background:var(--void);color:#fff;border-bottom:1px solid var(--steel-line);
 }
+.notice{
+  background:var(--signal);color:var(--ink);
+  border-bottom:1px solid rgba(15,18,22,.22);
+}
+.notice-in{
+  max-width:var(--wrap);margin:0 auto;padding:0 var(--pad);
+  height:var(--notice-h);display:flex;align-items:center;gap:.55rem;
+  font-size:.83rem;font-weight:600;line-height:1;
+}
+.notice svg{flex:none}
+.notice p{margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.notice b{font-family:"GA Mono",monospace;font-weight:500}
 .top-in{
   max-width:var(--wrap);margin:0 auto;padding:.65rem var(--pad);
   display:flex;align-items:center;gap:1rem;justify-content:space-between;
@@ -96,6 +112,12 @@ h2{
 }
 .top-call:hover{background:#ffc844}
 @media(max-width:560px){
+  /* на узком экране объявление переносится на две строки: обрезать его
+     многоточием нельзя — под нож попадает как раз домен */
+  .top{--notice-h:46px}
+  .notice-in{gap:.45rem;padding-inline:1rem}
+  .notice p{white-space:normal;line-height:1.25}
+  .notice svg{width:14px;height:13px}
   .brand span{display:none}
   .brand b{font-size:1.12rem}
   .top-call{font-size:.86rem;padding:.45rem .8rem}
@@ -147,33 +169,6 @@ h1 .sub{
 .hours-inline{
   font-family:"GA Mono",monospace;font-size:.85rem;color:#8d97a1;
   letter-spacing:.06em;
-}
-
-/* ---------- предупреждение ---------- */
-.alert{background:var(--concrete-dim)}
-.alert-box{
-  background:#fff;border-left:6px solid var(--signal);
-  padding:clamp(1.4rem,3.5vw,2.2rem);position:relative;
-  box-shadow:0 1px 0 rgba(15,18,22,.08);
-}
-.alert-box::before{
-  content:"";position:absolute;left:0;right:0;top:0;height:6px;
-  background:repeating-linear-gradient(135deg,var(--signal) 0 12px,var(--ink) 12px 24px);
-}
-.alert-head{
-  display:flex;align-items:center;gap:.7rem;margin:.8rem 0 .7rem;
-  font-family:"GA Display","GA Sans",sans-serif;font-weight:900;
-  text-transform:uppercase;font-size:clamp(1.25rem,.9rem + 1.6vw,1.9rem);line-height:1;
-  text-wrap:balance;
-}
-.alert-head svg{flex:none}
-.alert p{margin:0 0 .8rem;max-width:68ch}
-.alert p:last-child{margin-bottom:0}
-.alert strong{font-weight:600}
-.alert .dom{
-  font-family:"GA Mono",monospace;font-weight:500;
-  background:var(--ink);color:var(--signal);padding:.08em .38em;border-radius:2px;
-  white-space:nowrap;
 }
 
 /* ---------- услуги ---------- */
@@ -304,6 +299,12 @@ footer .legal{font-family:"GA Mono",monospace;font-size:.76rem;letter-spacing:.0
 <body>
 
 <header class="top">
+  <div class="notice">
+    <div class="notice-in">
+      <svg width="15" height="14" viewBox="0 0 30 27" aria-hidden="true"><path d="M15 1.8 29 25.2H1z" fill="none" stroke="#0f1216" stroke-width="3" stroke-linejoin="round"/><path d="M15 9.5v7.2" stroke="#0f1216" stroke-width="3" stroke-linecap="round"/><circle cx="15" cy="20.6" r="1.7" fill="#0f1216"/></svg>
+      <p>Предоплату не берём. Официальный сайт — <b>грэй-авто.рф</b></p>
+    </div>
+  </div>
   <div class="top-in">
     <div class="brand"><b>Грей Авто</b><span>пос. Приморский</span></div>
     <a class="top-call" href="tel:+79608507507">+7 960 850-75-07</a>
@@ -323,20 +324,6 @@ footer .legal{font-family:"GA Mono",monospace;font-size:.76rem;letter-spacing:.0
     <div class="hero-cta">
       <a class="call" href="tel:+79608507507"><small>Позвонить</small> +7 960 850-75-07</a>
       <span class="hours-inline">Часы работы 9:00–17:00</span>
-    </div>
-  </div>
-</section>
-
-<section class="section alert">
-  <div class="wrap">
-    <div class="alert-box">
-      <h2 class="alert-head">
-        <svg width="30" height="27" viewBox="0 0 30 27" aria-hidden="true"><path d="M15 1.8 29 25.2H1z" fill="none" stroke="#0f1216" stroke-width="2.4" stroke-linejoin="round"/><path d="M15 9.5v7.2" stroke="#0f1216" stroke-width="2.6" stroke-linecap="round"/><circle cx="15" cy="20.6" r="1.5" fill="#0f1216"/></svg>
-        Осторожно с сайтами-двойниками
-      </h2>
-      <p>Официальный сайт автосервиса «Грей Авто» — только <span class="dom">грэй-авто.рф</span>.</p>
-      <p>Мы <strong>не берём предоплату</strong> через сторонние сайты и <strong>не просим переводить деньги на карты физлиц</strong>.</p>
-      <p>Если другой сайт от нашего имени просит предоплату — свяжитесь с нами по телефону на этой странице и проверьте адрес сайта.</p>
     </div>
   </div>
 </section>
@@ -401,7 +388,7 @@ footer .legal{font-family:"GA Mono",monospace;font-size:.76rem;letter-spacing:.0
         <b>Самарская обл., Ставропольский р-н, пос. Приморский, ул. Спортивная, 2Г</b>
         <span>Открыть в Яндекс.Картах →</span>
       </a>
-      <p class="note">Мы не работаем через посредников и не принимаем оплату на карты физических лиц.</p>
+      <p class="note">Мы не работаем через посредников и не принимаем оплату на карты физических лиц. Если другой сайт от нашего имени просит предоплату — позвоните нам и проверьте адрес сайта.</p>
     </div>
   </div>
 </section>
