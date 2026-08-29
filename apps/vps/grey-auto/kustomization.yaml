@@ -17,6 +17,8 @@ configMapGenerator:
       - site/index.html
       - site/robots.txt
       - site/sitemap.xml
+      # og.png — бинарный, kustomize кладёт его в binaryData ConfigMap
+      - site/og.png
   - name: grey-auto-nginx
     files:
       - nginx/default.conf
