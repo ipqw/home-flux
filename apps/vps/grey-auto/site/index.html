@@ -80,13 +80,16 @@ h2{
   font-family:"GA Mono",monospace;font-weight:500;font-size:.95rem;
   text-decoration:none;background:var(--signal);color:var(--ink);
   padding:.5rem .9rem;border-radius:2px;white-space:nowrap;
+  /* 44px — минимальная площадь под палец; без min-height кнопка
+     выходила 40px на десктопе и 36px на телефоне. */
+  display:inline-flex;align-items:center;min-height:44px;
   transition:background .15s ease;
 }
 .top-call:hover{background:#ffc844}
 @media(max-width:560px){
   .brand span{display:none}
   .brand b{font-size:1.12rem}
-  .top-call{font-size:.86rem;padding:.45rem .7rem}
+  .top-call{font-size:.86rem;padding:.45rem .8rem}
   .top-in{padding-inline:1rem}
 }
 
