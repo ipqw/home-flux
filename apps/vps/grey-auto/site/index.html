@@ -195,6 +195,14 @@ h1 .sub{
   font-size:.9rem;color:#8d97a1;
 }
 
+/* ---------- «не поставляем» — жёлтая полоса огромными буквами ---------- */
+.noimport{background:var(--signal);color:var(--ink);padding-block:clamp(1.5rem,4vw,2.75rem);
+  border-top:1px solid rgba(15,18,22,.2)}
+.noimport p{
+  margin:0;font-weight:800;text-transform:uppercase;letter-spacing:-.02em;
+  font-size:clamp(1.9rem,1rem + 4.6vw,4.6rem);line-height:1;text-wrap:balance;
+}
+
 /* ---------- услуги ---------- */
 .grid{display:grid;gap:1px;background:var(--concrete-dim);border:1px solid var(--concrete-dim)}
 @media(min-width:760px){
@@ -358,7 +366,7 @@ footer .legal{font-size:.8rem}
       <span class="lede">Грэй-Авто</span>
       <span class="sub">ремонт автомобилей в Приморском под Тольятти</span>
     </h1>
-    <p class="claim">Ремонт и обслуживание легковых автомобилей. Ставропольский район, ул. Спортивная, 2Г. Поставкой автомобилей из-за рубежа не занимаемся.</p>
+    <p class="claim">Ремонт и обслуживание легковых автомобилей. Ставропольский район, ул. Спортивная, 2Г.</p>
     <div class="hero-cta">
       <a class="call" href="tel:+79608507507"><small>Позвонить</small> +7 960 850-75-07</a>
       <span class="hours-inline">Часы работы 9:00–17:00</span>
@@ -374,6 +382,12 @@ footer .legal{font-size:.8rem}
         <span class="stamp" aria-hidden="true">грэй-авто.рф</span>
         <span class="rivets-b" aria-hidden="true"><i></i><i></i></span>
    </div>
+  </div>
+</section>
+
+<section class="noimport" aria-label="Важно">
+  <div class="wrap">
+    <p>Поставкой автомобилей из-за рубежа не&nbsp;занимаемся</p>
   </div>
 </section>
 
