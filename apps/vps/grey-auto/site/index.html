@@ -168,11 +168,19 @@ h2{
 h1{
   font-family:"Golos",system-ui,sans-serif;font-weight:800;
   text-transform:uppercase;font-size:clamp(2.6rem,1rem + 8vw,5.6rem);
-  line-height:.95;letter-spacing:-.02em;margin:0 0 1rem;
+  line-height:.95;letter-spacing:-.02em;margin:0 0 .9rem;
 }
 h1 .lede{display:block;color:#fff}
-h1 .sub{
-  display:block;color:var(--signal);text-wrap:balance;
+/* предупреждение сразу под названием — жёлтая плашка крупными буквами */
+.hero .noimport{
+  display:inline-block;background:var(--signal);color:var(--ink);
+  margin:0 0 1.1rem;padding:.55rem .8rem .5rem;border-radius:2px;
+  font-weight:800;text-transform:uppercase;letter-spacing:-.015em;
+  font-size:clamp(1.25rem,.7rem + 2.2vw,2.15rem);line-height:1.05;text-wrap:balance;max-width:26ch;
+}
+.hero .sub{
+  margin:0 0 1rem;font-family:"Golos",system-ui,sans-serif;
+  display:block;color:#c3cad2;text-wrap:balance;
   text-transform:none;letter-spacing:0;font-weight:600;
   font-size:clamp(1.1rem,.7rem + 1.6vw,1.75rem);line-height:1.2;margin-top:.6rem;
 }
@@ -193,14 +201,6 @@ h1 .sub{
 .call:hover{background:#ffc844;box-shadow:0 0 0 6px rgba(242,176,30,.16)}
 .hours-inline{
   font-size:.9rem;color:#8d97a1;
-}
-
-/* ---------- «не поставляем» — жёлтая полоса огромными буквами ---------- */
-.noimport{background:var(--signal);color:var(--ink);padding-block:clamp(1.5rem,4vw,2.75rem);
-  border-top:1px solid rgba(15,18,22,.2)}
-.noimport p{
-  margin:0;font-weight:800;text-transform:uppercase;letter-spacing:-.02em;
-  font-size:clamp(1.9rem,1rem + 4vw,4rem);line-height:1;text-wrap:balance;
 }
 
 /* ---------- услуги ---------- */
@@ -331,7 +331,8 @@ footer .legal{font-size:.8rem}
 .hero-text>*,.hero .plate{animation:rise .6s cubic-bezier(.2,.7,.3,1) backwards}
 .hero-text>*:nth-child(2){animation-delay:.08s}
 .hero-text>*:nth-child(3){animation-delay:.16s}
-.hero .plate{animation-delay:.24s}
+.hero-text>*:nth-child(4){animation-delay:.22s}
+.hero .plate{animation-delay:.28s}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
@@ -362,10 +363,9 @@ footer .legal{font-size:.8rem}
 <section class="hero">
   <div class="wrap hero-in">
    <div class="hero-text">
-    <h1>
-      <span class="lede">Грэй-Авто</span>
-      <span class="sub">ремонт автомобилей в Приморском под Тольятти</span>
-    </h1>
+    <h1><span class="lede">Грэй-Авто</span></h1>
+    <p class="noimport">Подбором и поставкой автомобилей из Европы не занимаемся. Это мошенники!</p>
+    <p class="sub">ремонт автомобилей в Приморском под Тольятти</p>
     <p class="claim">Ремонт и обслуживание легковых автомобилей. Ставропольский район, ул. Спортивная, 2Г.</p>
     <div class="hero-cta">
       <a class="call" href="tel:+79608507507"><small>Позвонить</small> +7 960 850-75-07</a>
@@ -382,12 +382,6 @@ footer .legal{font-size:.8rem}
         <span class="stamp" aria-hidden="true">грэй-авто.рф</span>
         <span class="rivets-b" aria-hidden="true"><i></i><i></i></span>
    </div>
-  </div>
-</section>
-
-<section class="noimport" aria-label="Важно">
-  <div class="wrap">
-    <p>Подбором и поставкой автомобилей из&nbsp;Европы не&nbsp;занимаемся. Это&nbsp;мошенники!</p>
   </div>
 </section>
 
