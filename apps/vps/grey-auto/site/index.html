@@ -112,12 +112,14 @@ h2{
   /* навигация встаёт НАД строкой бренда: тогда при скролле она уезжает
      вместе с объявлением и липкой остаётся только строка с телефоном
      (44px вместо 123px — экран на телефоне не съедается) */
-  .top{--nav-h:44px}
+  .top{--nav-h:45px}
   .top-in{flex-wrap:wrap;row-gap:0;padding-top:0}
   .nav{order:-1;flex-basis:100%;margin-inline:0;gap:1.15rem;
        height:var(--nav-h);margin-bottom:.5rem;
        border-bottom:1px solid var(--steel-line)}
-  .nav a{font-size:.72rem;padding-block:.5rem}
+  /* ссылка занимает всю высоту полосы — иначе выходит 36px под палец */
+  .nav a{font-size:.72rem;padding-block:0;display:flex;align-items:center;
+         justify-content:center;height:100%;min-width:44px}
 }
 .brand b{
   font-family:"GA Display","GA Sans",sans-serif;font-weight:900;
