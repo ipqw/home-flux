@@ -60,6 +60,10 @@ a{color:inherit}
   color:var(--ink-soft);margin:0 0 .9rem;
 }
 .section{padding-block:clamp(3.25rem,8vw,5.5rem)}
+/* переход по якорю не должен прятать заголовок под липкую строку */
+:target{scroll-margin-top:5rem}
+html{scroll-behavior:smooth}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 h2{
   font-family:"GA Display","GA Sans",sans-serif;font-weight:900;
   text-transform:uppercase;letter-spacing:.005em;line-height:.95;
@@ -72,8 +76,9 @@ h2{
   /* липнет вся шапка, но со сдвигом на высоту объявления: при скролле
      объявление уходит за верх, строка с телефоном остаётся на месте.
      Без JS — одно отрицательное значение top. */
-  --notice-h:34px;
-  position:sticky;top:calc(-1 * var(--notice-h));z-index:20;
+  --notice-h:34px;--nav-h:0px;
+  /* 1px — граница объявления */
+  position:sticky;top:calc(-1 * (var(--notice-h) + 1px + var(--nav-h)));z-index:20;
   background:var(--void);color:#fff;border-bottom:1px solid var(--steel-line);
 }
 .notice{
@@ -93,6 +98,27 @@ h2{
   display:flex;align-items:center;gap:1rem;justify-content:space-between;
 }
 .brand{display:flex;align-items:baseline;gap:.6rem;min-width:0}
+.nav{display:flex;align-items:center;gap:1.4rem;margin-inline:auto}
+.nav a{
+  font-family:"GA Mono",monospace;font-weight:500;font-size:.78rem;
+  letter-spacing:.1em;text-transform:uppercase;color:#c3cad2;
+  text-decoration:none;padding-block:.7rem;
+  border-bottom:2px solid transparent;transition:color .15s ease,border-color .15s ease;
+}
+.nav a:hover{color:#fff;border-bottom-color:var(--signal)}
+/* от 780px вниз навигация не помещается между брендом и телефоном —
+   переносится отдельной строкой под ними */
+@media(max-width:780px){
+  /* навигация встаёт НАД строкой бренда: тогда при скролле она уезжает
+     вместе с объявлением и липкой остаётся только строка с телефоном
+     (44px вместо 123px — экран на телефоне не съедается) */
+  .top{--nav-h:44px}
+  .top-in{flex-wrap:wrap;row-gap:0;padding-top:0}
+  .nav{order:-1;flex-basis:100%;margin-inline:0;gap:1.15rem;
+       height:var(--nav-h);margin-bottom:.5rem;
+       border-bottom:1px solid var(--steel-line)}
+  .nav a{font-size:.72rem;padding-block:.5rem}
+}
 .brand b{
   font-family:"GA Display","GA Sans",sans-serif;font-weight:900;
   text-transform:uppercase;font-size:1.28rem;letter-spacing:.02em;
@@ -307,6 +333,11 @@ footer .legal{font-family:"GA Mono",monospace;font-size:.76rem;letter-spacing:.0
   </div>
   <div class="top-in">
     <div class="brand"><b>Грей Авто</b><span>пос. Приморский</span></div>
+    <nav class="nav" aria-label="Разделы">
+      <a href="#services">Услуги</a>
+      <a href="#about">О нас</a>
+      <a href="#contacts">Контакты</a>
+    </nav>
     <a class="top-call" href="tel:+79608507507">+7 960 850-75-07</a>
   </div>
 </header>
@@ -352,7 +383,7 @@ footer .legal{font-family:"GA Mono",monospace;font-size:.76rem;letter-spacing:.0
   </div>
 </section>
 
-<section class="section about">
+<section class="section about" id="about">
   <div class="wrap about-grid">
     <div>
       <p class="eyebrow">О нас</p>
