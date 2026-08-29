@@ -75,7 +75,7 @@ h2{
   /* липнет вся шапка, но со сдвигом на высоту объявления: при скролле
      объявление уходит за верх, строка с телефоном остаётся на месте.
      Без JS — одно отрицательное значение top. */
-  --notice-h:64px;--nav-h:0px;
+  --notice-h:34px;--nav-h:0px;
   /* 1px — граница объявления */
   position:sticky;top:calc(-1 * (var(--notice-h) + 1px + var(--nav-h)));z-index:20;
   background:var(--void);color:#fff;border-bottom:1px solid var(--steel-line);
@@ -86,14 +86,14 @@ h2{
 }
 .notice-in{
   max-width:var(--wrap);margin:0 auto;padding:0 var(--pad);
-  height:var(--notice-h);display:flex;align-items:center;gap:.8rem;
-  font-size:1.5rem;font-weight:800;line-height:1.1;
+  height:var(--notice-h);display:flex;align-items:center;gap:.55rem;
+  font-size:.83rem;font-weight:600;line-height:1;
 }
 .notice svg{flex:none}
 .notice .m{display:none}
 /* текст в две строки, если не влезает в одну: обрезать многоточием нельзя —
    под нож попадает «Предоплату не берём» */
-.notice p{margin:0}
+.notice p{margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .notice a{font-weight:800;text-decoration:none;white-space:nowrap}
 .top-in{
   max-width:var(--wrap);margin:0 auto;padding:.65rem var(--pad);
@@ -142,11 +142,11 @@ h2{
 @media(max-width:560px){
   /* на узком экране объявление переносится на две строки: обрезать его
      многоточием нельзя — под нож попадает как раз домен */
-  .top{--notice-h:98px}
-  .notice-in{gap:.6rem;padding-inline:1rem;font-size:1.15rem}
-  .notice p{line-height:1.25}
+  .top{--notice-h:48px}
+  .notice-in{gap:.45rem;padding-inline:1rem}
+  .notice p{white-space:normal;line-height:1.3}
   .notice .d{display:none}.notice .m{display:inline}
-  .notice svg{width:22px;height:20px}
+  .notice svg{width:14px;height:13px}
   .brand span{display:none}
   .brand b{font-size:1.12rem}
   .top-call{font-size:.86rem;padding:.45rem .8rem}
@@ -342,7 +342,7 @@ footer .legal{font-size:.8rem}
 <header class="top">
   <div class="notice">
     <div class="notice-in">
-      <svg width="28" height="26" viewBox="0 0 30 27" aria-hidden="true"><path d="M15 1.8 29 25.2H1z" fill="none" stroke="#0f1216" stroke-width="3" stroke-linejoin="round"/><path d="M15 9.5v7.2" stroke="#0f1216" stroke-width="3" stroke-linecap="round"/><circle cx="15" cy="20.6" r="1.7" fill="#0f1216"/></svg>
+      <svg width="15" height="14" viewBox="0 0 30 27" aria-hidden="true"><path d="M15 1.8 29 25.2H1z" fill="none" stroke="#0f1216" stroke-width="3" stroke-linejoin="round"/><path d="M15 9.5v7.2" stroke="#0f1216" stroke-width="3" stroke-linecap="round"/><circle cx="15" cy="20.6" r="1.7" fill="#0f1216"/></svg>
       <p>Осторожно, мошенники! <span class="d">Все услуги — только по телефону</span><span class="m">Наш телефон:</span> <a href="tel:+79608507507">+7 960 850-75-07</a>. Предоплату не берём.</p>
     </div>
   </div>
