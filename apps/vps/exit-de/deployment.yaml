@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exit-de
+  namespace: exit-de
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exit-de
+  template:
+    metadata:
+      labels:
+        app: exit-de
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: xray
+          image: ghcr.io/xtls/xray-core:26.7.28
+          args: ["-c", "/etc/xray/config.json"]
+          ports:
+            # hostIP прибивает слушателя к адресу VPS в туннеле. Без него hostPort
+            # повесил бы SOCKS на все интерфейсы VPS, включая публичный.
+            - name: socks
+              containerPort: 1080
+              hostPort: 1080
+              hostIP: 10.8.0.1
+          volumeMounts:
+            - name: config
+              mountPath: /etc/xray
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+      volumes:
+        - name: config
+          configMap:
+            name: exit-de-config
