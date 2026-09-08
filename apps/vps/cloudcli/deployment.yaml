@@ -1,0 +1,128 @@
+# CloudCLI — веб-морда к Claude Code с телефона. Форк Ромы
+# (coder8080/claudecodeui), релизный tgz ставится init-контейнером: своего
+# билдера на ноде нет, а собирать фронт на 5.8 Gi рядом с VPN-контуром нечем.
+#
+# Под работает от uid 1000 и монтирует хостовые ~/.claude, ~/projects, ~/core,
+# то есть живёт под подпиской владельца и видит его репозитории. Всё остальное
+# в домашке (в том числе ~/.cloudcli/auth.db с учёткой веб-интерфейса) — на PVC.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudcli
+  namespace: cloudcli
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: cloudcli
+  template:
+    metadata:
+      labels:
+        app: cloudcli
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      initContainers:
+        - name: install
+          image: node:22-bookworm
+          env:
+            - name: HOME
+              value: /home/ilya
+            - name: CLOUDCLI_VERSION
+              value: 1.37.2-g52dec3b
+            - name: npm_config_prefix
+              value: /home/ilya/.npm-global
+          command:
+            - bash
+            - -eu
+            - -c
+            - |
+              PKG="$HOME/.npm-global/lib/node_modules/@cloudcli-ai/cloudcli/package.json"
+              if grep -q "\"version\": \"$CLOUDCLI_VERSION\"" "$PKG" 2>/dev/null; then
+                echo "cloudcli $CLOUDCLI_VERSION уже стоит"
+              else
+                npm install -g --no-audit --no-fund \
+                  "https://github.com/coder8080/claudecodeui/releases/download/v$CLOUDCLI_VERSION/cloudcli.tgz"
+              fi
+              if [ ! -x "$HOME/.npm-global/bin/claude" ]; then
+                npm install -g --no-audit --no-fund @anthropic-ai/claude-code
+              fi
+              # Claude Code иначе упрётся в интерактивный онбординг, а в поде
+              # его некому пройти. Хостовый ~/.claude.json намеренно не берём:
+              # два процесса, пишущих в один файл, ловят гонки.
+              [ -f "$HOME/.claude.json" ] || echo '{"hasCompletedOnboarding":true}' > "$HOME/.claude.json"
+          volumeMounts:
+            - name: home
+              mountPath: /home/ilya
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+      containers:
+        - name: cloudcli
+          image: node:22-bookworm
+          env:
+            - name: HOME
+              value: /home/ilya
+            - name: PATH
+              value: /home/ilya/.npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+            - name: SERVER_PORT
+              value: "3001"
+            - name: HOST
+              value: 0.0.0.0
+            - name: WORKSPACES_ROOT
+              value: /home/ilya
+            # Голос: дефолт — бесплатный Edge через шим рядом. Свой провайдер
+            # каждый прописывает в Settings → Voice, тогда браузер идёт в него
+            # напрямую, мимо этого прокси.
+            - name: VOICE_API_BASE_URL
+              value: http://edge-tts:5050/v1
+            - name: VOICE_TTS_MODEL
+              value: tts-1
+            - name: VOICE_TTS_VOICE
+              value: ru-RU-DmitryNeural
+          command:
+            - node
+            - /home/ilya/.npm-global/lib/node_modules/@cloudcli-ai/cloudcli/dist-server/server/index.js
+          ports:
+            - name: http
+              containerPort: 3001
+          volumeMounts:
+            - name: home
+              mountPath: /home/ilya
+            - name: claude
+              mountPath: /home/ilya/.claude
+            - name: projects
+              mountPath: /home/ilya/projects
+            - name: core
+              mountPath: /home/ilya/core
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              # Нода уже на 72%, и на ней же VPN-контур. Лимит — чтобы OOM-killer
+              # пришёл за этим подом, а не за xray.
+              memory: 1Gi
+      volumes:
+        - name: home
+          persistentVolumeClaim:
+            claimName: cloudcli-home
+        - name: claude
+          hostPath:
+            path: /home/ilya/.claude
+            type: Directory
+        - name: projects
+          hostPath:
+            path: /home/ilya/projects
+            type: Directory
+        - name: core
+          hostPath:
+            path: /home/ilya/core
+            type: Directory

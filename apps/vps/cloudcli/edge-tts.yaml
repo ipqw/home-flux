@@ -1,0 +1,55 @@
+# Бесплатный TTS по умолчанию: OpenAI-совместимый шим поверх Microsoft Edge
+# Read Aloud. Cloudcli умеет только протокол OpenAI (POST /audio/speech),
+# а Edge говорит по своему WebSocket — шим и переводит одно в другое.
+# Ключ не требуется: сервис живёт только внутри кластера.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: edge-tts
+  namespace: cloudcli
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: edge-tts
+  template:
+    metadata:
+      labels:
+        app: edge-tts
+    spec:
+      containers:
+        - name: edge-tts
+          image: travisvn/openai-edge-tts:latest
+          env:
+            - name: PORT
+              value: "5050"
+            - name: REQUIRE_API_KEY
+              value: "False"
+            - name: DEFAULT_VOICE
+              value: ru-RU-DmitryNeural
+            - name: DEFAULT_RESPONSE_FORMAT
+              value: mp3
+          ports:
+            - name: http
+              containerPort: 5050
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: edge-tts
+  namespace: cloudcli
+spec:
+  selector:
+    app: edge-tts
+  ports:
+    - name: http
+      port: 5050
+      targetPort: http

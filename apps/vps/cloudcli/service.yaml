@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloudcli
+  namespace: cloudcli
+spec:
+  selector:
+    app: cloudcli
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

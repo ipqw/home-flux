@@ -1,0 +1,14 @@
+# Домашка пода. Сюда же ставится сам cloudcli и claude-code (npm prefix
+# ~/.npm-global), поэтому том переживает рестарт без повторной установки.
+# Хостовые ~/.claude, ~/projects, ~/core монтируются поверх этого тома.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cloudcli-home
+  namespace: cloudcli
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi

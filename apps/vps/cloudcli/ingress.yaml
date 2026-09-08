@@ -1,0 +1,44 @@
+# cc.ipqw.cc — claude code, читается одинаково с обеих сторон.
+#
+# Поверх стоит basic-auth: под монтирует домашку ноды, поэтому дверь наружу
+# держится вторым замком, а не только логином самого cloudcli. Второй смысл —
+# cloudcli отдаёт инстанс первому, кто зарегистрируется, и basic-auth закрывает
+# это окно (сертификат попадает в CT-логи за минуты, сканеры ходят по ним).
+# Секрет basic-auth (cloudcli-basicauth) в git не лежит: sops CLI на ноде нет,
+# а класть htpasswd открытым — то же самое, что не иметь его вовсе. Создаётся
+# руками:  kubectl -n cloudcli create secret generic cloudcli-basicauth \
+#            --from-file=users=<файл вида ilya:$apr1$...>
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: gate
+  namespace: cloudcli
+spec:
+  basicAuth:
+    secret: cloudcli-basicauth
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cloudcli
+  namespace: cloudcli
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.middlewares: cloudcli-gate@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - cc.ipqw.cc
+      secretName: cloudcli-tls
+  rules:
+    - host: cc.ipqw.cc
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cloudcli
+                port:
+                  number: 80
