@@ -1,0 +1,45 @@
+# VK-бот, один на все поды. Каждый человек видит и пересоздаёт только комнаты
+# своего пода; новые ссылки бот присылает сам. Человек должен один раз написать
+# сообществу — иначе VK не даст боту ему писать.
+# Карта людей — users.json рядом; configMapGenerator даёт ConfigMap с хэшем в имени,
+# так что правка карты сама перекатывает бота.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whitelist-bypass-bot
+  namespace: whitelist-bypass
+spec:
+  replicas: 1
+  # Два бота на одном Long Poll ответят дважды — только Recreate.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: whitelist-bypass-bot
+  template:
+    metadata:
+      labels:
+        app: whitelist-bypass-bot
+    spec:
+      enableServiceLinks: false
+      imagePullSecrets:
+        - name: ghcr-pull
+      containers:
+        - name: bot
+          image: ghcr.io/ipqw/whitelist-bypass-bot:v0.4.4-1
+          envFrom:
+            - secretRef:
+                name: whitelist-bypass-vk
+          volumeMounts:
+            - name: users
+              mountPath: /etc/wlb
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+      volumes:
+        - name: users
+          configMap:
+            name: whitelist-bypass-users

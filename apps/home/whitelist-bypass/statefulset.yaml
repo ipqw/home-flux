@@ -1,0 +1,72 @@
+# Обход белых списков: один под = один человек. Номер пода = номер человека
+# в users.json бота (0 — Илья, 1 — папа). Новый человек: replicas +1, строка в
+# users.json, вход в его аккаунты через wlb-login (README репо ipqw/whitelist-bypass).
+#
+# Куки и данные GUI-Creator'а живут на PVC пода — вход делается один раз.
+# PVC при уменьшении replicas не удаляются: вернуть человека = вернуть реплику.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: whitelist-bypass
+  namespace: whitelist-bypass
+spec:
+  serviceName: whitelist-bypass
+  replicas: 2
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: whitelist-bypass
+  template:
+    metadata:
+      labels:
+        app: whitelist-bypass
+    spec:
+      enableServiceLinks: false
+      imagePullSecrets:
+        - name: ghcr-pull
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        runAsNonRoot: true
+      containers:
+        - name: pod
+          image: ghcr.io/ipqw/whitelist-bypass-pod:v0.4.4-1
+          env:
+            # Выход трафика туннеля — немецкий SOCKS exit-de на VPS через WireGuard.
+            - name: UPSTREAM_SOCKS
+              value: 10.8.0.1:1080
+          ports:
+            - name: agent
+              containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: agent
+            periodSeconds: 30
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            # Electron при входе падает на дефолтных 64 МБ /dev/shm.
+            - name: shm
+              mountPath: /dev/shm
+          resources:
+            requests:
+              cpu: 50m
+              memory: 96Mi
+            limits:
+              # запас под GUI-Creator на время входа
+              memory: 1536Mi
+      volumes:
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 256Mi
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 2Gi

@@ -1,0 +1,14 @@
+# Headless-сервис StatefulSet'а: даёт каждому поду своё имя
+# whitelist-bypass-N.whitelist-bypass — по нему бот ходит в агента конкретного человека.
+apiVersion: v1
+kind: Service
+metadata:
+  name: whitelist-bypass
+  namespace: whitelist-bypass
+spec:
+  clusterIP: None
+  selector:
+    app: whitelist-bypass
+  ports:
+    - name: agent
+      port: 8080
