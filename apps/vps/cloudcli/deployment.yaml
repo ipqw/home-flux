@@ -1,4 +1,6 @@
-# CloudCLI — веб-морда к Claude Code с телефона. Форк Ромы
+# CloudCLI — веб-морда к Claude Code с телефона. Личный форк ipqw/claudecodeui
+# поверх форка Ромы: сюда сначала выкатываются свои фичи до PR к Роме.
+# Форк Ромы
 # (coder8080/claudecodeui), релизный tgz ставится init-контейнером: своего
 # билдера на ноде нет, а собирать фронт на 5.8 Gi рядом с VPN-контуром нечем.
 #
@@ -33,7 +35,7 @@ spec:
             - name: HOME
               value: /home/ilya
             - name: CLOUDCLI_VERSION
-              value: 1.37.2-g52dec3b
+              value: 1.37.3-g4198d1a
             - name: npm_config_prefix
               value: /home/ilya/.npm-global
           command:
@@ -46,7 +48,7 @@ spec:
                 echo "cloudcli $CLOUDCLI_VERSION уже стоит"
               else
                 npm install -g --no-audit --no-fund \
-                  "https://github.com/coder8080/claudecodeui/releases/download/v$CLOUDCLI_VERSION/cloudcli.tgz"
+                  "https://github.com/ipqw/claudecodeui/releases/download/v$CLOUDCLI_VERSION/cloudcli.tgz"
               fi
               if [ ! -x "$HOME/.npm-global/bin/claude" ]; then
                 npm install -g --no-audit --no-fund @anthropic-ai/claude-code
