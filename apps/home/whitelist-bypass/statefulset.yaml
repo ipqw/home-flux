@@ -31,7 +31,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: pod
-          image: ghcr.io/ipqw/whitelist-bypass-pod:v0.4.4-1
+          image: ghcr.io/ipqw/whitelist-bypass-pod:v0.4.4-2
           env:
             # Выход трафика туннеля — немецкий SOCKS exit-de на VPS через WireGuard.
             - name: UPSTREAM_SOCKS
