@@ -36,6 +36,8 @@ spec:
             # Выход трафика туннеля — немецкий SOCKS exit-de на VPS через WireGuard.
             - name: UPSTREAM_SOCKS
               value: 10.8.0.1:1080
+            - name: ALLOW_PRIVATE_DST
+              value: "true"
           ports:
             - name: agent
               containerPort: 8080
