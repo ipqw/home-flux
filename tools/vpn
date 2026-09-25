@@ -68,9 +68,13 @@ def vless_link(srv, person):
 
 ROUTING = {
     "Name": "", "GlobalProxy": "true", "RouteOrder": "block-proxy-direct",
-    "RemoteDNSType": "DoH", "RemoteDNSDomain": "", "RemoteDNSIP": "",
+    # Tunnel DNS для Happ. С пустыми полями DNS ноута шёл через роутер мимо
+    # туннеля, и YouTube не резолвился.
+    "RemoteDNSType": "DoH", "RemoteDNSDomain": "https://cloudflare-dns.com/dns-query",
+    "RemoteDNSIP": "1.1.1.1",
     "DomesticDNSType": "DoU", "DomesticDNSDomain": "", "DomesticDNSIP": "",
-    "Geoipurl": "", "Geositeurl": "", "LastUpdated": "", "DnsHosts": {},
+    "Geoipurl": "", "Geositeurl": "", "LastUpdated": "",
+    "DnsHosts": {"cloudflare-dns.com": "1.1.1.1"},
     "DirectSites": [
         "geosite:category-ru", "regexp:.*\\.ru", "geosite:yandex",
         "geosite:mailru", "geosite:apple", "geosite:microsoft", "geosite:google-play",
