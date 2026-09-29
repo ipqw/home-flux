@@ -1,6 +1,7 @@
 # Обход белых списков: один под = один человек. Номер пода = номер человека
-# в users.json бота (0 — Илья, 1 — папа). Новый человек: replicas +1, строка в
-# users.json, вход в его аккаунты через wlb-login (README репо ipqw/whitelist-bypass).
+# в users.json бота (0 — Илья, 1 — папа, 2 — дедуля, пока без VK и не в users.json).
+# Новый человек: replicas +1, строка в users.json, вход в его аккаунты через
+# wlb-login (README репо ipqw/whitelist-bypass).
 #
 # Куки и данные GUI-Creator'а живут на PVC пода — вход делается один раз.
 # PVC при уменьшении replicas не удаляются: вернуть человека = вернуть реплику.
@@ -11,7 +12,7 @@ metadata:
   namespace: whitelist-bypass
 spec:
   serviceName: whitelist-bypass
-  replicas: 2
+  replicas: 3
   podManagementPolicy: Parallel
   selector:
     matchLabels:
