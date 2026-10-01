@@ -74,6 +74,14 @@ spec:
               value: /home/ilya
             - name: PATH
               value: /home/ilya/.npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+            # Вход в Claude по токену из `claude setup-token` (SOPS, claude-token.yaml).
+            # cloudcli передаёт своё окружение в claude, токен берётся отсюда:
+            # ~/.claude/.credentials.json общий с хостом и протухает.
+            - name: CLAUDE_CODE_OAUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: claude-oauth
+                  key: CLAUDE_CODE_OAUTH_TOKEN
             - name: SERVER_PORT
               value: "3001"
             - name: HOST
