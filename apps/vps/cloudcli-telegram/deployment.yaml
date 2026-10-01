@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudcli-telegram
+spec:
+  replicas: 1
+  # Два процесса с одним токеном Telegram мешают друг другу (409), поэтому без наложения
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: cloudcli-telegram
+  template:
+    metadata:
+      labels:
+        app: cloudcli-telegram
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+      containers:
+        - name: bot
+          image: node:24-alpine
+          command: [node, /app/bot.mjs]
+          env:
+            - name: CLOUDCLI_URL
+              value: http://cloudcli
+            - name: PROJECT_PATH
+              value: /home/ilya/core
+          # TELEGRAM_BOT_TOKEN, ALLOWED_USERS, CLOUDCLI_USERNAME, CLOUDCLI_PASSWORD
+          envFrom:
+            - secretRef:
+                name: cloudcli-telegram
+          volumeMounts:
+            - name: code
+              mountPath: /app
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+      volumes:
+        - name: code
+          configMap:
+            name: cloudcli-telegram

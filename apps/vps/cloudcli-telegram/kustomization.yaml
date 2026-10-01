@@ -1,8 +1,12 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+namespace: cloudcli
 resources:
-  - flux.yaml
-  # flux-system/cloudcli-telegram-git: deploy key к репо бота
-  - git-secret.yaml
-  # cloudcli/cloudcli-telegram: токен бота, ALLOWED_USERS, учётка CloudCLI
+  - deployment.yaml
+  # TELEGRAM_BOT_TOKEN, ALLOWED_USERS, CLOUDCLI_USERNAME, CLOUDCLI_PASSWORD (SOPS)
   - secret.yaml
+# Код бота лежит обычным файлом; хеш в имени ConfigMap перезапускает под при правке.
+configMapGenerator:
+  - name: cloudcli-telegram
+    files:
+      - bot.mjs
