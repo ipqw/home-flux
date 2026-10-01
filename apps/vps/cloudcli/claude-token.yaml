@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: claude-oauth
+    namespace: cloudcli
+stringData:
+    CLAUDE_CODE_OAUTH_TOKEN: ENC[AES256_GCM,data:7jr1FTUWtDTQ3r27dmHfLzL1v9lz/lOmi3jO777lfaeSJaBJ06IXQ6+ldiSrXvTwrA5HTmOk4pXGMnFCJZsQQU0TGGpORNOGeNHV0XqAwqecKWrPx0csTSSz6na5gYYhR4KATUdp32Pl2tLj,iv:hm4mExonG7xdDWFTVH0AbQ6d6Tzn7cKAMZmswoUFMw0=,tag:1trnPKoJ1b/kXx+ELDM+Jg==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBObk5aMnBQMU9zekFCMm1S
+            MjVSbndIOG1NNHR1cVRkYjN3d25icGFqV2xBCmk5VjltQWZWRkpKaCtGeTh4U3JO
+            K0JtNW9hdUJZR2pMZEx4RW0vOWQ0MTAKLS0tIFFLRzMvZENaYmZTYzBydzUzQ2Rt
+            eGR0dVIxMVd2MW4vZm1CdytSdEs4MWcKt2e9Pp60KUaJonhlyzZ7jkDArXox9eMt
+            2Nmy1J+Mxrxl3usrqa4I7AKKtDkafiK1ty+CZ12oJjAjqY5f564LQg==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1fnteet2mnkw75uhpz4k0nzwdxjwcxyy5ludtkx55w2afvm98yg6q6jc8r6
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-10-01T17:36:51Z"
+    mac: ENC[AES256_GCM,data:HrufybtVnFdVGn4sSwOgs8E0V3y5yMgyHc6gshucAMUFAbsvGhmGpsng1Pg48GJiuym+TpTVXrb1TAcDcXzKu6YrWDz8Wlso6lY3BdVafrdjBapa+rK/MCroib5aT4GOEL5JD/lafmcWp+jdoBQ27Mhg7BBXk55pNUG2ywN+gbI=,iv:pUn+9OG+W9hh5IHf/cgpTQF9MF+5WjaF9sGTNeE5JrE=,tag:uYsDfL7hgyKOYjhD3/uQiA==,type:str]
+    version: 3.13.3
